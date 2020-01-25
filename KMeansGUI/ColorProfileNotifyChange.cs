@@ -7,7 +7,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace KMeansCPU
+namespace KMeans.GUI
 {
     public class ColorProfileNotifyChange : ColorProfile, INotifyPropertyChanged
     {

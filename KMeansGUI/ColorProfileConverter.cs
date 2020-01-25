@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace KMeansCPU
+namespace KMeans.GUI
 {
     public static class ColorProfileConverter
     {

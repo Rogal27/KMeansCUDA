@@ -19,8 +19,9 @@ using System.Windows.Shapes;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.IO;
 
-namespace KMeansCPU
+namespace KMeans.GUI
 {
+    using Cpp.CLI;
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
@@ -134,7 +135,7 @@ namespace KMeansCPU
             DestColorSpaceComboBox.ItemsSource = ColorSpaceList;
             DestColorSpaceComboBox.SelectedIndex = 4;//widegamut
 
-            var bmp = KMeansCPU.Properties.Resources.image1;
+            var bmp = KMeans.GUI.Properties.Resources.image1;
             var SourceImageBitmap = System.Windows.Interop.Imaging.CreateBitmapSourceFromHBitmap(bmp.GetHbitmap(), IntPtr.Zero, System.Windows.Int32Rect.Empty, BitmapSizeOptions.FromWidthAndHeight(bmp.Width, bmp.Height));
 
             LoadWritableBitamp(SourceImageBitmap, IsWindowInitialized);
@@ -385,13 +386,13 @@ namespace KMeansCPU
             if(useLAB==true)
             {
                 ColorProfileConverter.ConvertImageToLAB(SourceImageColorArray, LABImageArray, (ColorProfileEnum)from);
-                var result = KMeans.CalculateKMeans(LABImageArray, KMeansParam, Globals.max_iter, Globals.eps);
+                var result = KMeansCalc.CalculateKMeans(LABImageArray, KMeansParam, Globals.max_iter, Globals.eps);
                 ColorProfileConverter.ConvertImageFromLAB(result, DestImageColorArray, (ColorProfileEnum)from);
             }
             else
             {
                 ColorProfileConverter.ConvertImageToDoubleColor(SourceImageColorArray, LABImageArray);
-                var result = KMeans.CalculateKMeans(LABImageArray, KMeansParam, Globals.max_iter, Globals.eps);
+                var result = KMeansCalc.CalculateKMeans(LABImageArray, KMeansParam, Globals.max_iter, Globals.eps);
                 ColorProfileConverter.ConvertImageFromDoubleColor(result, DestImageColorArray);
             }
 
@@ -593,6 +594,22 @@ namespace KMeansCPU
             OriginalSourceImageColorArray = (SimpleColor[,])SourceImageColorArray.Clone();
 
             TryGenerate();
+        }
+
+        private void TestButtonRadioButton_Click(object sender, RoutedEventArgs e)
+        {
+            int[] tab = new int[10];
+            for (int i = 0; i < tab.Length; i++)
+            {
+                tab[i] = 3;
+            }
+            unsafe
+            {
+                using (var wrapper = new Logic())
+                {
+                    MessageBox.Show("The answer is: " + wrapper.Sum(tab, tab.Length));
+                }
+            }
         }
     }
 }

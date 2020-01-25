@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace KMeansCPU
+namespace KMeans.GUI
 {
     public struct SimpleColor
     {
@@ -18,6 +18,14 @@ namespace KMeansCPU
             B = b;
         }
         public void ConvertFromInt(int col)
+        {
+            int mask = 255;
+            R = (byte)((col & (mask << 16)) >> 16);
+            G = (byte)((col & (mask << 8)) >> 8);
+            B = (byte)(col & mask);
+        }
+
+        public void ConvertFromInt(uint col)
         {
             int mask = 255;
             R = (byte)((col & (mask << 16)) >> 16);

@@ -1,9 +1,9 @@
-﻿<Window x:Class="KMeansCPU.MainWindow"
+﻿<Window x:Class="KMeans.GUI.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:KMeansCPU"
+        xmlns:local="clr-namespace:KMeans.GUI"
         mc:Ignorable="d"
         DataContext="{Binding RelativeSource={RelativeSource Mode=Self}}"
         Title="{Binding Source={x:Static local:Globals.WindowName}, Mode=OneWay}"
@@ -121,9 +121,11 @@
                          Click="GrayscaleRadioButton_Click"/>
             <RadioButton Style="{StaticResource MenuButtonStyle}"
                          Content="K-Means"
-                         BorderThickness="0"
                          Click="KMeansRadioButton_Click"/>
-
+            <RadioButton Style="{StaticResource MenuButtonStyle}"
+                         Content="Test"
+                         BorderThickness="0"
+                         Click="TestButtonRadioButton_Click"/>
         </WrapPanel>
         <!--Source Grid-->
         <Grid Name="SourceGrid" Grid.Row="1" Grid.Column="0" Margin="20,0,0,0"

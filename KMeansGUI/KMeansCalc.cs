@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace KMeansCPU
+namespace KMeans.GUI
 {
-    public static class KMeans
+    public static class KMeansCalc
     {
         public static DoubleColor[,] CalculateKMeans(DoubleColor[,] array, int k_means, int max_iter, double eps)
         {

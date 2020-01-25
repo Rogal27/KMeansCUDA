@@ -1,7 +1,7 @@
-﻿<Application x:Class="KMeansCPU.App"
+﻿<Application x:Class="KMeans.GUI.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="clr-namespace:KMeansCPU"
+             xmlns:local="clr-namespace:KMeans.GUI"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
          

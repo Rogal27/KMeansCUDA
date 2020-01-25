@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media.Imaging;
 
-namespace KMeansCPU
+namespace KMeans.GUI
 {
     public static class Paint
     {
@@ -15,12 +15,12 @@ namespace KMeansCPU
             writeableBitmap.Lock();
             unsafe
             {
-                int writeablebpp = writeableBitmap.Format.BitsPerPixel / 8;
-                int writeableBuffer = (int)writeableBitmap.BackBuffer;
-                int bufferstride = writeableBitmap.BackBufferStride;
+                Int64 writeablebpp = writeableBitmap.Format.BitsPerPixel / 8;
+                Int64 writeableBuffer = (Int64)writeableBitmap.BackBuffer;
+                Int64 bufferstride = writeableBitmap.BackBufferStride;
                 Parallel.For(0, pixels.GetLength(0), y =>
                 {
-                    int place = writeableBuffer + y * bufferstride;
+                    Int64 place = writeableBuffer + y * bufferstride;
                     for (int x = 0; x < pixels.GetLength(1); x++)
                     {
                         *((int*)place) = pixels[y, x].ToInt();
@@ -36,12 +36,12 @@ namespace KMeansCPU
             writeableBitmap.Lock();
             unsafe
             {
-                int writeablebpp = writeableBitmap.Format.BitsPerPixel / 8;
-                int writeableBuffer = (int)writeableBitmap.BackBuffer;
-                int bufferstride = writeableBitmap.BackBufferStride;
-                for (int y = 0; y < pixels.GetLength(0); y++)
+                Int64 writeablebpp = writeableBitmap.Format.BitsPerPixel / 8;
+                Int64 writeableBuffer = (Int64)writeableBitmap.BackBuffer;
+                Int64 bufferstride = writeableBitmap.BackBufferStride;
+                for (Int64 y = 0; y < pixels.GetLength(0); y++)
                 {
-                    for (int x = 0; x < pixels.GetLength(1); x++)
+                    for (Int64 x = 0; x < pixels.GetLength(1); x++)
                     {
                         int col = *((int*)writeableBuffer);
                         //SimpleColor sc = new SimpleColor(col);
