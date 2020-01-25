@@ -80,5 +80,13 @@ namespace KMeansCPU
         {
             return $"R: {Math.Round(R, 4),5}, G: {Math.Round(G, 4),5}, B: {Math.Round(B, 4),5}";
         }
+
+        public static double Distance(DoubleColor c1,DoubleColor c2)
+        {
+            double dL = c1.R - c2.R;
+            double da = c1.G - c2.G;
+            double db = c1.B - c2.B;
+            return Math.Sqrt(dL * dL + da * da + db * db);
+        }
     }
 }

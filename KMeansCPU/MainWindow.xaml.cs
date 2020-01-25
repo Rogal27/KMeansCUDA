@@ -65,6 +65,34 @@ namespace KMeansCPU
             }
         }
 
+        private int _KMeansParam;
+        public int KMeansParam
+        {
+            get
+            {
+                return _KMeansParam;
+            }
+            set
+            {
+                _KMeansParam = value;
+                NotifyPropertyChanged();
+            }
+        }
+
+        private bool _useLAB;
+        public bool useLAB
+        {
+            get
+            {
+                return _useLAB;
+            }
+            set
+            {
+                _useLAB = value;
+                NotifyPropertyChanged();
+            }
+        }
+
         private bool GrayscaleButtonClicked;
 
 
@@ -95,6 +123,8 @@ namespace KMeansCPU
             SourceImageCP = new ColorProfileNotifyChange(ColorProfileFactory.GetFactory().sRBGcolorProfile);
             DestImageCP = new ColorProfileNotifyChange(ColorProfileFactory.GetFactory().WideGamutcolorProfile);
             GrayscaleButtonClicked = false;
+            KMeansParam = Globals.k_means;
+            useLAB = true;
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
@@ -288,7 +318,23 @@ namespace KMeansCPU
             }
             foreach (var box in destTextBoxes)
             {
-                if (validationRule.Validate(box.Text, null).IsValid == false)
+                if (box.Name == "KMeansTextBox")
+                {
+                    if(int.TryParse(box.Text,out int res)==true)
+                    {
+                        if (res <= 0)
+                        {
+                            IsDestValid = false;
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        IsDestValid = false;
+                        break;
+                    }
+                }
+                else if (validationRule.Validate(box.Text, null).IsValid == false)
                 {
                     IsDestValid = false;
                     break;
@@ -330,6 +376,30 @@ namespace KMeansCPU
                 }
             }
         }
+        private void KMeansRadioButton_Click(object sender, RoutedEventArgs e)
+        {
+            DoubleColor[,] LABImageArray = new DoubleColor[SourceImageColorArray.GetLength(0), SourceImageColorArray.GetLength(1)];
+            int from = SourceColorSpaceComboBox.SelectedIndex;
+
+            
+            if(useLAB==true)
+            {
+                ColorProfileConverter.ConvertImageToLAB(SourceImageColorArray, LABImageArray, (ColorProfileEnum)from);
+                var result = KMeans.CalculateKMeans(LABImageArray, KMeansParam, Globals.max_iter, Globals.eps);
+                ColorProfileConverter.ConvertImageFromLAB(result, DestImageColorArray, (ColorProfileEnum)from);
+            }
+            else
+            {
+                ColorProfileConverter.ConvertImageToDoubleColor(SourceImageColorArray, LABImageArray);
+                var result = KMeans.CalculateKMeans(LABImageArray, KMeansParam, Globals.max_iter, Globals.eps);
+                ColorProfileConverter.ConvertImageFromDoubleColor(result, DestImageColorArray);
+            }
+
+            
+            
+            Paint.CopyToWriteableBitmap(DestImageWB, DestImageColorArray);
+        }
+
 
         private void LoadImageRadioButton_Click(object sender, RoutedEventArgs e)
         {

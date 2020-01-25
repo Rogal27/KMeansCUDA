@@ -58,6 +58,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="KMeans.cs" />
     <Compile Include="SimpleColor.cs" />
     <Compile Include="Validation.cs" />
     <Page Include="MainWindow.xaml">
@@ -113,6 +114,10 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Images\image2.jpg" />
+  </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <Content Include="CPP\Logic.h" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

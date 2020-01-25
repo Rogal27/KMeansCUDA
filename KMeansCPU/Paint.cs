@@ -85,7 +85,7 @@ namespace KMeansCPU
                         if (dist <= Globals.Radius)
                         {
                             //calculate HSV
-                            double V = 1;
+                            //double V = 1;
                             double C = dist / (double)Globals.Radius;
                             double m = 1 - C;
                             double cos = Cosinus(middle_x, middle_y, x, y, dist);
@@ -167,10 +167,5 @@ namespace KMeansCPU
             //double dot = (double)v_x;
             return (double)v_x / length;
         }
-
-
-
-
-
     }
 }

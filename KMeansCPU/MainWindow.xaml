@@ -118,8 +118,11 @@
                          Click="SaveImageRadioButton_Click"/>
             <RadioButton Style="{StaticResource MenuButtonStyle}"
                          Content="Szarość"
-                         BorderThickness="0"
                          Click="GrayscaleRadioButton_Click"/>
+            <RadioButton Style="{StaticResource MenuButtonStyle}"
+                         Content="K-Means"
+                         BorderThickness="0"
+                         Click="KMeansRadioButton_Click"/>
 
         </WrapPanel>
         <!--Source Grid-->
@@ -279,6 +282,19 @@
             </Grid.ColumnDefinitions>
             <Label Grid.Row="0" Grid.Column="0" Style="{StaticResource BigLabelInGrid}"
                 Content="Profil docelowy:"/>
+            <Label Grid.Row="0" Grid.Column="1" Style="{StaticResource SmallLabelInGrid}"
+                  HorizontalAlignment="Right"
+                   Content="K-means:"/>
+            <TextBox Grid.Row="0" Grid.Column="2" Style="{StaticResource TextBoxInGrid}"
+                     Text="{Binding KMeansParam, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                     Name="KMeansTextBox"/>
+            <Label Grid.Row="0" Grid.Column="3" Style="{StaticResource SmallLabelInGrid}"
+                  HorizontalAlignment="Right"
+                   Content="UseLAB:"/>
+            <CheckBox Grid.Row="0" Grid.Column="4"
+                     IsChecked="{Binding useLAB, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                         HorizontalAlignment="Center"
+                         VerticalAlignment="Center"/>
             <ComboBox Name="DestColorSpaceComboBox"
                       Grid.Row="1" Grid.Column="0" Style="{StaticResource ComboBoxInGrid}"
                       SelectionChanged="DestColorSpaceComboBox_SelectionChanged">

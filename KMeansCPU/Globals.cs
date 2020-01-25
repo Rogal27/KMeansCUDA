@@ -20,5 +20,10 @@ namespace KMeansCPU
         public static int ImageHeight = 600;
         public static int Radius = 250;
 
+        //kmeans
+        public static int k_means = 10;
+        public static int max_iter = 50;
+        public static double eps = 1e-4;
+
     }
 }
