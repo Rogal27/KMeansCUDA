@@ -27,7 +27,11 @@ array<int>^ KMeans::Cpp::CLI::Logic::addParallelVectors(array<int>^ vector1, arr
     pin_ptr<int> vector1_ptr = &vector1[0];
     pin_ptr<int> vector2_ptr = &vector2[0];
     int* result_ptr = _impl->addParallelVectors(vector1_ptr, vector2_ptr, length);
-    array<int>^ result = gcnew array<int>(length + 2);
+    if (result_ptr == nullptr)
+    {
+        return nullptr;
+    }
+    array<int>^ result = gcnew array<int>(length);
     System::Runtime::InteropServices::Marshal::Copy((IntPtr)result_ptr, result, 0, length);
     delete result_ptr;
     return result;

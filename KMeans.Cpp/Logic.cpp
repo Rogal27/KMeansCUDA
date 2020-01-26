@@ -4,7 +4,7 @@
 #include "cuda_runtime.h"
 #include "device_launch_parameters.h"
 
-#include "kernel.cu"
+#include "kernel.cuh"
 
 #include <stdio.h>
 
@@ -25,6 +25,6 @@ int KMeans::Cpp::Logic::Sum(int tab[], int length) const
 
 int* KMeans::Cpp::Logic::addParallelVectors(int* vector1, int* vector2, int length)
 {
-    //return invokeParallelSumCUDA(vector1, vector2, length);
-	return nullptr;
+    return invokeParallelSumCUDA(vector1, vector2, length);
+	//return nullptr;
 }

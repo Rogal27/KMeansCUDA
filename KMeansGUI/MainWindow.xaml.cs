@@ -598,18 +598,28 @@ namespace KMeans.GUI
 
         private void TestButtonRadioButton_Click(object sender, RoutedEventArgs e)
         {
-            int[] tab = new int[10];
-            for (int i = 0; i < tab.Length; i++)
+            int[] tab1 = new int[10];
+            int[] tab2 = new int[10];
+            for (int i = 0; i < tab1.Length; i++)
             {
-                tab[i] = 3;
+                tab1[i] = 3;
+                tab2[i] = 7;
             }
-            unsafe
-            {
-                using (var wrapper = new Logic())
+
+            
+
+            using (var wrapper = new Logic())
+            { 
+                var result = wrapper.addParallelVectors(tab1, tab2, tab1.Length);
+
+                for (int i = 0; i < result.Length; i++)
                 {
-                    MessageBox.Show("The answer is: " + wrapper.Sum(tab, tab.Length));
+                    Debug.Write($"{result[i]}, ");
                 }
+                Debug.WriteLine("");
+
             }
+            
         }
     }
 }
