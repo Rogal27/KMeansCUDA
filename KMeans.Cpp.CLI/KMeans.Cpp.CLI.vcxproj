@@ -207,7 +207,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\KMeans.Cpp\KMeans.Cpp.vcxproj">
-      <Project>{8ccc05be-b07a-465f-b583-3e79c1eb05cb}</Project>
+      <Project>{2624caaf-db96-49e0-9165-944faf03a1c4}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

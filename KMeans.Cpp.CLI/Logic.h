@@ -28,6 +28,7 @@ namespace KMeans
                 int Get();
 
                 int Sum(array<int>^, int);
+                array<int>^ addParallelVectors(array<int>^ vector1, array<int>^ vector2, int length);
 
                 void Destroy(); // Helper function
             private:

@@ -22,6 +22,17 @@ int KMeans::Cpp::CLI::Logic::Sum(array<int>^ tab, int length)
     return _impl->Sum(tab_ptr, length);
 }
 
+array<int>^ KMeans::Cpp::CLI::Logic::addParallelVectors(array<int>^ vector1, array<int>^ vector2, int length)
+{
+    pin_ptr<int> vector1_ptr = &vector1[0];
+    pin_ptr<int> vector2_ptr = &vector2[0];
+    int* result_ptr = _impl->addParallelVectors(vector1_ptr, vector2_ptr, length);
+    array<int>^ result = gcnew array<int>(length + 2);
+    System::Runtime::InteropServices::Marshal::Copy((IntPtr)result_ptr, result, 0, length);
+    delete result_ptr;
+    return result;
+}
+
 void KMeans::Cpp::CLI::Logic::Destroy()
 {
     if (_impl != nullptr)

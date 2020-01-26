@@ -12,7 +12,8 @@ namespace KMeans
         {
         public:
             int Get() const; // That's where our code goes
-            int Sum(int[], int) const; // That's where our code goes
+            int Sum(int[], int) const;
+            int* addParallelVectors(int* vector1, int* vector2, int length);
         };
     }
 }
