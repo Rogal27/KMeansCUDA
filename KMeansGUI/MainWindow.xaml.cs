@@ -377,29 +377,7 @@ namespace KMeans.GUI
                 }
             }
         }
-        private void KMeansRadioButton_Click(object sender, RoutedEventArgs e)
-        {
-            DoubleColor[,] LABImageArray = new DoubleColor[SourceImageColorArray.GetLength(0), SourceImageColorArray.GetLength(1)];
-            int from = SourceColorSpaceComboBox.SelectedIndex;
-
-            
-            if(useLAB==true)
-            {
-                ColorProfileConverter.ConvertImageToLAB(SourceImageColorArray, LABImageArray, (ColorProfileEnum)from);
-                var result = KMeansCalc.CalculateKMeans(LABImageArray, KMeansParam, Globals.max_iter, Globals.eps);
-                ColorProfileConverter.ConvertImageFromLAB(result, DestImageColorArray, (ColorProfileEnum)from);
-            }
-            else
-            {
-                ColorProfileConverter.ConvertImageToDoubleColor(SourceImageColorArray, LABImageArray);
-                var result = KMeansCalc.CalculateKMeans(LABImageArray, KMeansParam, Globals.max_iter, Globals.eps);
-                ColorProfileConverter.ConvertImageFromDoubleColor(result, DestImageColorArray);
-            }
-
-            
-            
-            Paint.CopyToWriteableBitmap(DestImageWB, DestImageColorArray);
-        }
+        
 
 
         private void LoadImageRadioButton_Click(object sender, RoutedEventArgs e)
@@ -596,6 +574,30 @@ namespace KMeans.GUI
             TryGenerate();
         }
 
+        private void KMeansRadioButton_Click(object sender, RoutedEventArgs e)
+        {
+            DoubleColor[,] LABImageArray = new DoubleColor[SourceImageColorArray.GetLength(0), SourceImageColorArray.GetLength(1)];
+            int from = SourceColorSpaceComboBox.SelectedIndex;
+
+
+            if (useLAB == true)
+            {
+                ColorProfileConverter.ConvertImageToLAB(SourceImageColorArray, LABImageArray, (ColorProfileEnum)from);
+                var result = KMeansCalc.CalculateKMeans(LABImageArray, KMeansParam, Globals.max_iter, Globals.eps);
+                ColorProfileConverter.ConvertImageFromLAB(result, DestImageColorArray, (ColorProfileEnum)from);
+            }
+            else
+            {
+                ColorProfileConverter.ConvertImageToDoubleColor(SourceImageColorArray, LABImageArray);
+                var result = KMeansCalc.CalculateKMeans(LABImageArray, KMeansParam, Globals.max_iter, Globals.eps);
+                ColorProfileConverter.ConvertImageFromDoubleColor(result, DestImageColorArray);
+            }
+
+
+
+            Paint.CopyToWriteableBitmap(DestImageWB, DestImageColorArray);
+        }
+
         private void TestButtonRadioButton_Click(object sender, RoutedEventArgs e)
         {
             var tab1 = new float[2];
@@ -626,6 +628,34 @@ namespace KMeans.GUI
                 inttab2[i] = 7;
             }
 
+            DoubleColor[,] LABImageArray = new DoubleColor[SourceImageColorArray.GetLength(0), SourceImageColorArray.GetLength(1)];
+            int from = SourceColorSpaceComboBox.SelectedIndex;
+            if (useLAB == true)
+            {
+                ColorProfileConverter.ConvertImageToLAB(SourceImageColorArray, LABImageArray, (ColorProfileEnum)from);
+            }
+            else
+            {
+                ColorProfileConverter.ConvertImageToDoubleColor(SourceImageColorArray, LABImageArray);
+            }
+
+            int rows = LABImageArray.GetLength(0);
+            int cols = LABImageArray.GetLength(1);
+
+            var vector_x = new float[rows * cols];
+            var vector_y = new float[rows * cols];
+            var vector_z = new float[rows * cols];
+
+            for (int x = 0; x < rows; x++)
+            {
+                for (int y = 0; y < cols; y++)
+                {
+                    vector_x[y + x * cols] = (float)LABImageArray[x, y].R;
+                    vector_y[y + x * cols] = (float)LABImageArray[x, y].G;
+                    vector_z[y + x * cols] = (float)LABImageArray[x, y].B;
+                }
+            }
+
             using (var wrapper = new Logic())
             {
                 //var result = wrapper.addParallelVectors(inttab1, inttab2, inttab1.Length);
@@ -642,8 +672,31 @@ namespace KMeans.GUI
                     Debug.WriteLine($"X: {tab1[i]} Y: {tab2[i]} Z: {tab3[i]}");
                 }
 
+
+                var img_iters = wrapper.KMeansGather(vector_x, vector_y, vector_z, vector_x.Length, KMeansParam);
+                Debug.WriteLine($"Image iterations: {img_iters}");
             }
-            
+
+            for (int x = 0; x < rows; x++)
+            {
+                for (int y = 0; y < cols; y++)
+                {
+                    LABImageArray[x, y].R = vector_x[y + x * cols];
+                    LABImageArray[x, y].G = vector_y[y + x * cols];
+                    LABImageArray[x, y].B = vector_z[y + x * cols];
+                }
+            }
+
+            if (useLAB == true)
+            {
+                ColorProfileConverter.ConvertImageFromLAB(LABImageArray, DestImageColorArray, (ColorProfileEnum)from);
+            }
+            else
+            {
+                ColorProfileConverter.ConvertImageFromDoubleColor(LABImageArray, DestImageColorArray);
+            }
+
+            Paint.CopyToWriteableBitmap(DestImageWB, DestImageColorArray);
         }
     }
 }
