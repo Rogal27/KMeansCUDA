@@ -37,6 +37,20 @@ array<int>^ KMeans::Cpp::CLI::Logic::addParallelVectors(array<int>^ vector1, arr
     return result;
 }
 
+int KMeans::Cpp::CLI::Logic::KMeansGather(
+    array<float>^ vector_x_h,
+    array<float>^ vector_y_h,
+    array<float>^ vector_z_h,
+    int length,
+    int k_param)
+{
+    pin_ptr<float> vector_x_ptr = &vector_x_h[0];
+    pin_ptr<float> vector_y_ptr = &vector_y_h[0];
+    pin_ptr<float> vector_z_ptr = &vector_z_h[0];
+    int iters = _impl->KMeansGather(vector_x_ptr, vector_y_ptr, vector_z_ptr, length, k_param);
+    return iters;
+}
+
 void KMeans::Cpp::CLI::Logic::Destroy()
 {
     if (_impl != nullptr)

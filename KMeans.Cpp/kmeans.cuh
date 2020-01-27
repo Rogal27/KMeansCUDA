@@ -1,0 +1,15 @@
+void allocateArray(void** devPtr, size_t size);
+void freeArray(void* devPtr);
+void threadSync();
+void copyArrayToDevice(void* device, const void* host, int offset, int size);
+void copyArrayFromDevice(void* host, const void* device, int size);
+int KMeansGatherCuda(
+	float* vector_x,
+	float* vector_y,
+	float* vector_z,
+	int length,
+	int k_param,
+	int* cluster,
+	float* centroid_x,
+	float* centroid_y,
+	float* centroid_z);

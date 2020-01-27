@@ -14,6 +14,12 @@ namespace KMeans
             int Get() const; // That's where our code goes
             int Sum(int[], int) const;
             int* addParallelVectors(int* vector1, int* vector2, int length);
+            int KMeansGather(
+                float* vector_x_h,
+                float* vector_y_h,
+                float* vector_z_h,
+                int length,
+                int k_param);
         };
     }
 }

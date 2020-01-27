@@ -598,25 +598,49 @@ namespace KMeans.GUI
 
         private void TestButtonRadioButton_Click(object sender, RoutedEventArgs e)
         {
-            int[] tab1 = new int[10];
-            int[] tab2 = new int[10];
+            var tab1 = new float[2];
+            var tab2 = new float[2];
+            var tab3 = new float[2];
             for (int i = 0; i < tab1.Length; i++)
             {
-                tab1[i] = 3;
-                tab2[i] = 7;
+                if (i == 0)
+                {
+                    tab1[i] = 1f;
+                    tab2[i] = 1f;
+                    tab3[i] = 1f;
+                }
+                else
+                {
+                    tab1[i] = 2f;
+                    tab2[i] = 2f;
+                    tab3[i] = 2f;
+                }
             }
 
-            
+            var inttab1 = new int[10];
+            var inttab2 = new int[10];
+
+            for (int i = 0; i < inttab1.Length; i++)
+            {
+                inttab1[i] = 3;
+                inttab2[i] = 7;
+            }
 
             using (var wrapper = new Logic())
-            { 
-                var result = wrapper.addParallelVectors(tab1, tab2, tab1.Length);
+            {
+                //var result = wrapper.addParallelVectors(inttab1, inttab2, inttab1.Length);
 
-                for (int i = 0; i < result.Length; i++)
+                //for (int i = 0; i < result.Length; i++)
+                //{
+                //    Debug.Write($"{result[i]}, ");
+                //}
+                //Debug.WriteLine("");
+                var iters = wrapper.KMeansGather(tab1, tab2, tab3, tab1.Length, 1);
+                Debug.WriteLine($"KMEANS: Iters: {iters}");
+                for (int i = 0; i < tab1.Length; i++)
                 {
-                    Debug.Write($"{result[i]}, ");
+                    Debug.WriteLine($"X: {tab1[i]} Y: {tab2[i]} Z: {tab3[i]}");
                 }
-                Debug.WriteLine("");
 
             }
             

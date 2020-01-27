@@ -29,6 +29,12 @@ namespace KMeans
 
                 int Sum(array<int>^, int);
                 array<int>^ addParallelVectors(array<int>^ vector1, array<int>^ vector2, int length);
+                int KMeansGather(
+                    array<float>^ vector_x_h,
+                    array<float>^ vector_y_h,
+                    array<float>^ vector_z_h,
+                    int length,
+                    int k_param);
 
                 void Destroy(); // Helper function
             private:
