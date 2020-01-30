@@ -90,6 +90,9 @@ int KMeansGatherCuda(
 			centroid_y,
 			centroid_z,
 			hasCentroidChanged_d);
+		;
+		//threadSync();
+		;
 		copyArrayFromDevice(hasCentroidChanged_h, hasCentroidChanged_d, sizeof(bool));
 		if (hasCentroidChanged_h[0] == false)
 		{
@@ -110,7 +113,23 @@ int KMeansGatherCuda(
 		centroid_z);
 
 	freeArray(hasCentroidChanged_d);
-	delete hasCentroidChanged_h;
+	delete [] hasCentroidChanged_h;
 
 	return iterations;
+}
+
+void ConvertToLABCuda(
+	int* colors,
+	int length,
+	float XR,
+	float YR,
+	float ZR,
+	float* vector_x,
+	float* vector_y,
+	float* vector_z)
+{
+	dim3 block_first(THREADS, 1, 1);
+	dim3 grid_first(CalculateBlockNumber(length, block_first.x), 1, 1);
+
+
 }

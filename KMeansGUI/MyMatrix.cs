@@ -106,6 +106,19 @@ namespace KMeans.GUI
             }
         }
 
+        public float[] toFloatMatrix()
+        {
+            float[] result = new float[size * size];
+            for (int x = 0; x < size; x++)
+            {
+                for (int y = 0; y < size; y++)
+                {
+                    result[y + x * size] = (float)array[x, y];
+                }
+            }
+            return result;
+        }
+
         public static MyMatrix GenerateBradfordMatrix(ColorProfileEnum from, ColorProfileEnum to)
         {
             //from is D65

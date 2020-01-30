@@ -13,3 +13,12 @@ int KMeansGatherCuda(
 	float* centroid_x,
 	float* centroid_y,
 	float* centroid_z);
+void ConvertToLABCuda(
+	int* colors,
+	int length,
+	float XR,
+	float YR,
+	float ZR,
+	float* vector_x,
+	float* vector_y,
+	float* vector_z);

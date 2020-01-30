@@ -20,6 +20,12 @@ namespace KMeans
                 float* vector_z_h,
                 int length,
                 int k_param);
+            int KMeansImageGather(
+                int* colors,
+                int length,
+                int k_param);
+        private:
+            float Dist(const float& x1, const float& y1, const float& z1, const float& x2, const float& y2, const float& z2);
         };
     }
 }
