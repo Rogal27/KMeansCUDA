@@ -202,7 +202,7 @@ __global__ void CalculateNewCentroidsGather_kernel(
 				centroid_y[index] = dist_sum_y;
 				centroid_z[index] = dist_sum_z;
 				hasChanged = true;
-				//changed[0] = true;
+				changed[0] = true;
 			}
 		}
 	}
