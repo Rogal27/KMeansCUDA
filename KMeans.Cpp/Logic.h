@@ -23,6 +23,12 @@ namespace KMeans
             int KMeansImageGather(
                 int* colors,
                 int length,
+                float XR,
+                float YR,
+                float ZR,
+                float gamma,
+                float* RGBtoXYZMatrix,
+                float* XYZtoRGBMatrix,
                 int k_param);
         private:
             float Dist(const float& x1, const float& y1, const float& z1, const float& x2, const float& y2, const float& z2);

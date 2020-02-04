@@ -31,6 +31,28 @@ namespace KMeans.GUI
             writeableBitmap.AddDirtyRect(new Int32Rect(0, 0, writeableBitmap.PixelWidth, writeableBitmap.PixelHeight));
             writeableBitmap.Unlock();
         }
+
+        public static void CopyToWriteableBitmap(WriteableBitmap writeableBitmap, int[] pixels, int rows, int cols)
+        {
+            writeableBitmap.Lock();
+            unsafe
+            {
+                Int64 writeablebpp = writeableBitmap.Format.BitsPerPixel / 8;
+                Int64 writeableBuffer = (Int64)writeableBitmap.BackBuffer;
+                Int64 bufferstride = writeableBitmap.BackBufferStride;
+                Parallel.For(0, rows, y =>
+                {
+                    Int64 place = writeableBuffer + y * bufferstride;
+                    for (int x = 0; x < cols; x++)
+                    {
+                        *((int*)place) = pixels[x + y * cols];
+                        place += writeablebpp;
+                    }
+                });
+            }
+            writeableBitmap.AddDirtyRect(new Int32Rect(0, 0, writeableBitmap.PixelWidth, writeableBitmap.PixelHeight));
+            writeableBitmap.Unlock();
+        }
         public static void ReadColorsFromBitmap(WriteableBitmap writeableBitmap, SimpleColor[,] pixels)
         {
             writeableBitmap.Lock();

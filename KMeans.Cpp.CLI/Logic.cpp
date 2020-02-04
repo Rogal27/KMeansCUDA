@@ -51,6 +51,24 @@ int KMeans::Cpp::CLI::Logic::KMeansGather(
     return iters;
 }
 
+int KMeans::Cpp::CLI::Logic::KMeansImageGather(
+    array<int>^ colors,
+    int length,
+    float XR,
+    float YR,
+    float ZR,
+    float gamma,
+    array<float>^ RGBtoXYZMatrix,
+    array<float>^ XYZtoRGBMatrix,
+    int k_param)
+{
+    pin_ptr<int> colors_ptr = &colors[0];
+    pin_ptr<float> RGBtoXYZMatrix_ptr = &RGBtoXYZMatrix[0];
+    pin_ptr<float> XYZtoRGBMatrix_ptr = &XYZtoRGBMatrix[0];
+    int iters = _impl->KMeansImageGather(colors_ptr, length, XR, YR, ZR, gamma, RGBtoXYZMatrix_ptr, XYZtoRGBMatrix_ptr, k_param);
+    return iters;
+}
+
 void KMeans::Cpp::CLI::Logic::Destroy()
 {
     if (_impl != nullptr)

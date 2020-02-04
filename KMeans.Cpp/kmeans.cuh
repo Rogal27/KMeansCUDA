@@ -19,6 +19,19 @@ void ConvertToLABCuda(
 	float XR,
 	float YR,
 	float ZR,
+	float gamma,
+	float* RGBtoXYZMatrix,
+	float* vector_x,
+	float* vector_y,
+	float* vector_z);
+void ConvertFromLABCuda(
+	int* colors,
+	int length,
+	float XR,
+	float YR,
+	float ZR,
+	float gamma,
+	float* XYZtoRGBMatrix,
 	float* vector_x,
 	float* vector_y,
 	float* vector_z);

@@ -170,10 +170,19 @@ namespace KMeans.GUI
             {
                 for (int j = 0; j < imageSource.GetLength(1); j++)
                 {
-                    DoubleColor color = new DoubleColor(imageSource[i, j]);
+                    var img_src = imageSource[i, j];
+                    DoubleColor color = new DoubleColor(img_src);
+                    if (i == 0 && j % 100 == 0)
+                    {
+                        Debug.WriteLine($"Before LAB j:{j}, R:{color.R},G:{color.G},B:{color.B}"); ;
+                    }
                     var c1 = ConvertColorToXYZ(color, from);
                     var c2 = ConvertColorFromXYZToLAB(c1, from);
                     imageDest[i, j] = c2;
+                    if(i==0 && j%100==0)
+                    {
+                        Debug.WriteLine($"After LAB j:{j}, L:{c2.R},a:{c2.G},b:{c2.B}"); ;
+                    }
                 }
             });
         }
@@ -308,6 +317,11 @@ namespace KMeans.GUI
                     var c1 = ConvertColorFromLABToXYZ(imageSource[i, j], from);
                     var c2 = ConvertColorFromXYZ(c1, from, from);
                     imageDest[i, j] = c2.ToSimpleColor();
+                    if (i == 0 && j % 100 == 0)
+                    {                        
+                       // Debug.WriteLine($"From LAB to XYZ j:{j}, X:{c1.R},Y:{c1.G},Z:{c1.B}");
+                        Debug.WriteLine($"From LAB j:{j}, R:{imageDest[i, j].R},G:{imageDest[i, j].G},B:{imageDest[i, j].B}");
+                    }
                 }
             });
         }

@@ -124,12 +124,54 @@ void ConvertToLABCuda(
 	float XR,
 	float YR,
 	float ZR,
+	float gamma,
+	float* RGBtoXYZMatrix,
 	float* vector_x,
 	float* vector_y,
 	float* vector_z)
 {
-	dim3 block_first(THREADS, 1, 1);
-	dim3 grid_first(CalculateBlockNumber(length, block_first.x), 1, 1);
+	dim3 block(THREADS, 1, 1);
+	dim3 grid(CalculateBlockNumber(length, block.x), 1, 1);
 
+	ConvertToLAB_kernel << <grid, block >> > (
+		colors, 
+		length, 
+		XR,
+		YR,
+		ZR, 
+		gamma,
+		RGBtoXYZMatrix,
+		vector_x, 
+		vector_y,
+		vector_z);
+
+}
+
+void ConvertFromLABCuda(
+	int* colors,
+	int length,
+	float XR,
+	float YR,
+	float ZR,
+	float gamma,
+	float* XYZtoRGBMatrix,
+	float* vector_x,
+	float* vector_y,
+	float* vector_z)
+{
+	dim3 block(THREADS, 1, 1);
+	dim3 grid(CalculateBlockNumber(length, block.x), 1, 1);
+
+	ConvertFromLAB_kernel << <grid, block >> > (
+		colors, 
+		length,
+		XR,
+		YR,
+		ZR,
+		gamma,
+		XYZtoRGBMatrix,
+		vector_x,
+		vector_y, 
+		vector_z);
 
 }

@@ -698,5 +698,72 @@ namespace KMeans.GUI
 
             Paint.CopyToWriteableBitmap(DestImageWB, DestImageColorArray);
         }
+
+        private void Test2ButtonRadioButton_Click(object sender, RoutedEventArgs e)
+        {
+            DoubleColor[,] LABImageArray = new DoubleColor[SourceImageColorArray.GetLength(0), SourceImageColorArray.GetLength(1)];
+            int from = SourceColorSpaceComboBox.SelectedIndex;
+            if (useLAB == true)
+            {
+                ColorProfileConverter.ConvertImageToLAB(SourceImageColorArray, LABImageArray, (ColorProfileEnum)from);
+            }
+            else
+            {
+                ColorProfileConverter.ConvertImageToDoubleColor(SourceImageColorArray, LABImageArray);
+            }
+
+            int rows = SourceImageColorArray.GetLength(0);
+            int cols = SourceImageColorArray.GetLength(1);
+
+            var colors_array = new int[rows * cols];
+
+            for (int x = 0; x < rows; x++)
+            {
+                for (int y = 0; y < cols; y++)
+                {
+                    colors_array[y + x * cols] = SourceImageColorArray[x, y].ToInt();
+                    //colors_array[y + x * cols] = -1;
+                    if (x == 0 && y%100==0)
+                        Debug.WriteLine($"Before y:{y}, val: {colors_array[y + x * cols]}");
+                }
+            }
+
+            if (useLAB == true)
+            {
+                ColorProfileConverter.ConvertImageFromLAB(LABImageArray, DestImageColorArray, (ColorProfileEnum)from);
+            }
+            else
+            {
+                ColorProfileConverter.ConvertImageFromDoubleColor(LABImageArray, DestImageColorArray);
+            }
+
+            var RGBtoXYZMatrix = SourceImageCP.RGBtoXYZ.toFloatMatrix();
+            var XYZtoRGBMatrix = SourceImageCP.XYZtoRGB.toFloatMatrix();
+            float YR = 100f;
+            double XR_double = SourceImageCP.White_X * YR / SourceImageCP.White_Y;
+            double ZR_double = SourceImageCP.White_Z * YR / SourceImageCP.White_Y;
+            float XR = (float)XR_double;
+            float ZR = (float)ZR_double;
+            float gamma = (float)SourceImageCP.Gamma;
+
+            using (var wrapper = new Logic())
+            {
+                var img_iters = wrapper.KMeansImageGather(colors_array, colors_array.Length, XR, YR, ZR, gamma, RGBtoXYZMatrix, XYZtoRGBMatrix, KMeansParam);
+                Debug.WriteLine($"Image iterations: {img_iters}");
+            }
+
+
+            for (int x = 0; x < rows; x++)
+            {
+                for (int y = 0; y < cols; y++)
+                {
+                    if (x == 0 && y % 100 == 0)
+                        Debug.WriteLine($"After y:{y}, val: {colors_array[y + x * cols]}");
+                    DestImageColorArray[x, y] = new SimpleColor(colors_array[y + x * cols]);
+                }
+            }
+
+            Paint.CopyToWriteableBitmap(DestImageWB, DestImageColorArray);
+        }
     }
 }

@@ -124,8 +124,11 @@
                          Click="KMeansRadioButton_Click"/>
             <RadioButton Style="{StaticResource MenuButtonStyle}"
                          Content="Test"
-                         BorderThickness="0"
                          Click="TestButtonRadioButton_Click"/>
+            <RadioButton Style="{StaticResource MenuButtonStyle}"
+                         Content="Test2"
+                         BorderThickness="0"
+                         Click="Test2ButtonRadioButton_Click"/>
         </WrapPanel>
         <!--Source Grid-->
         <Grid Name="SourceGrid" Grid.Row="1" Grid.Column="0" Margin="20,0,0,0"

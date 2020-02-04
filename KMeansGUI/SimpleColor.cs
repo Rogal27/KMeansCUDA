@@ -17,6 +17,13 @@ namespace KMeans.GUI
             G = g;
             B = b;
         }
+        public SimpleColor(int col)
+        {
+            int mask = 255;
+            R = (byte)((col & (mask << 16)) >> 16);
+            G = (byte)((col & (mask << 8)) >> 8);
+            B = (byte)(col & mask);
+        }
         public void ConvertFromInt(int col)
         {
             int mask = 255;

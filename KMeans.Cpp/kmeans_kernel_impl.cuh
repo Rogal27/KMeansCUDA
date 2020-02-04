@@ -17,13 +17,16 @@ __device__ float Dist(const float& x1, const float& y1, const float& z1, const f
 
 __device__ void ConvertToLABOneColor(int& color, float& L, float& a, float& b, float* RGBtoXYZmatrix, float& XR, float& YR, float& ZR, float& gamma)
 {
-	unsigned char mask = 255;
+	int mask = 255;
 	unsigned char R = (unsigned char)((color & (mask << 16)) >> 16);
 	unsigned char G = (unsigned char)((color & (mask << 8)) >> 8);
 	unsigned char B = (unsigned char)(color & mask);
+
 	float x = (float)R / 255.0f;
 	float y = (float)G / 255.0f;
 	float z = (float)B / 255.0f;
+
+	
 
 	//inverse gamma correction
 	x = powf(x, gamma);
@@ -35,9 +38,13 @@ __device__ void ConvertToLABOneColor(int& color, float& L, float& a, float& b, f
 	float yr = RGBtoXYZmatrix[3] * x + RGBtoXYZmatrix[4] * y + RGBtoXYZmatrix[5] * z;
 	float zr = RGBtoXYZmatrix[6] * x + RGBtoXYZmatrix[7] * y + RGBtoXYZmatrix[8] * z;
 
+	
+
 	xr = xr / XR;
 	yr = yr / YR;
 	zr = zr / ZR;
+
+	
 
 	float fx;
 	float fy;
@@ -77,56 +84,81 @@ __device__ void ConvertToLABOneColor(int& color, float& L, float& a, float& b, f
 
 __device__ void ConvertFromLABOneColor(int& color, float& L, float& a, float& b, float* XYZtoRGBmatrix, float& XR, float& YR, float& ZR, float& gamma)
 {
-	float xr = L / XR;
-	float yr = a / YR;
-	float zr = b / ZR;
+	float xr;
+	float yr;
+	float zr;
 
-	float fx;
-	float fy;
-	float fz;
+	float fy = (L + 16.0f) / 116.0f;
+	float fx = a / 500.0f + fy;
+	float fz = fy - b / 200.0f;
 
-	if (xr > eps_modifier)
+
+	xr = powf(fx, 3.0f);
+	if (xr <= eps_modifier)
 	{
-		fx = powf(xr, 1.0f / 3.0f);
+		xr = (116.0f * fx - 16.0f) / k_modifier;
+	}
+
+	if (L > k_modifier* eps_modifier)
+	{
+		yr = powf((L + 16.0f) / 116.0f, 3.0f);
 	}
 	else
 	{
-		fx = (k_modifier * xr + 16.0f) / 116.0f;
+		yr = L / k_modifier;
 	}
 
-	if (yr > eps_modifier)
+	zr = powf(fz, 3.0f);
+	if (zr <= eps_modifier)
 	{
-		fy = powf(yr, 1.0f / 3.0f);
-	}
-	else
-	{
-		fy = (k_modifier * yr + 16.0f) / 116.0f;
+		zr = (116.0f * fz - 16.0f) / k_modifier;
 	}
 
-	if (zr > eps_modifier)
-	{
-		fz = powf(zr, 1.0f / 3.0f);
-	}
-	else
-	{
-		fz = (k_modifier * zr + 16.0f) / 116.0f;
-	}
-
-	float x = 116.0f * fy - 16.0f;
-	float y = 500.0f * (fx - fy);
-	float z = 200.0f * (fy - fz);
+	float x = xr * XR;
+	float y = yr * YR;
+	float z = zr * ZR;
 
 
 	L = XYZtoRGBmatrix[0] * x + XYZtoRGBmatrix[1] * y + XYZtoRGBmatrix[2] * z;
 	a = XYZtoRGBmatrix[3] * x + XYZtoRGBmatrix[4] * y + XYZtoRGBmatrix[5] * z;
 	b = XYZtoRGBmatrix[6] * x + XYZtoRGBmatrix[7] * y + XYZtoRGBmatrix[8] * z;
-
+	
 
 	float inv_gamma = 1.0f / gamma;
 
 	L = powf(L, inv_gamma);
 	a = powf(a, inv_gamma);
 	b = powf(b, inv_gamma);
+
+	L *= 255.0f;
+	a *= 255.0f;
+	b *= 255.0f;
+	
+	if (L < 0.0f)
+		L = 0.0f;
+	if (a < 0.0f)
+		a = 0.0f;
+	if (b < 0.0f)
+		b = 0.0f;
+
+	if (L > 255.0f)
+		L = 255.0f;
+	if (a > 255.0f)
+		a = 255.0f;
+	if (b > 255.0f)
+		b = 255.0f;
+
+
+
+	unsigned char R = (unsigned char)L;
+	unsigned char G = (unsigned char)a;
+	unsigned char B = (unsigned char)b;
+
+	color = 0;
+	color |= 255 << 24;
+	color |= R << 16; // R
+	color |= G << 8; // G
+	color |= B; //B
 }
 
 __global__ void CalculateDistancesGather_kernel(
@@ -234,6 +266,8 @@ __global__ void ConvertToLAB_kernel(
 	float XR,
 	float YR,
 	float ZR,
+	float gamma,
+	float* RGBtoXYZMatrix,
 	float* vector_x,
 	float* vector_y,
 	float* vector_z)
@@ -241,6 +275,31 @@ __global__ void ConvertToLAB_kernel(
 	unsigned int index = blockIdx.x * blockDim.x + threadIdx.x;
 	if (index < length)
 	{
+		ConvertToLABOneColor(colors[index], vector_x[index], vector_y[index], vector_z[index], RGBtoXYZMatrix, XR, YR, ZR, gamma);
+	}
+}
+
+__global__ void ConvertFromLAB_kernel(
+	int* colors,
+	int length,
+	float XR,
+	float YR,
+	float ZR,
+	float gamma,
+	float* XYZtoRGBMatrix,
+	float* vector_x,
+	float* vector_y,
+	float* vector_z)
+{
+	unsigned int index = blockIdx.x * blockDim.x + threadIdx.x;
+	if (index < length)
+	{
+		ConvertFromLABOneColor(colors[index], vector_x[index], vector_y[index], vector_z[index], XYZtoRGBMatrix, XR, YR, ZR, gamma);
+		//colors[index] = 0;
+		//colors[index] |= 255 << 24;
+		//colors[index] |= 205 << 16; // R
+		//colors[index] |= 100 << 8; // G
+		//colors[index] |= 100; //B
 
 	}
 }
