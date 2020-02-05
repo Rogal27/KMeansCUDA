@@ -9,7 +9,6 @@
 #include <helper_functions.h>
 
 constexpr int THREADS = 256;
-constexpr int MAX_ITER = 50;
 
 
 void allocateArray(void** devPtr, size_t size)
@@ -48,6 +47,7 @@ int KMeansGatherCuda(
 	float* vector_z, 
 	int length, 
 	int k_param,
+	int max_iter,
 	int* cluster,
 	float* centroid_x, 
 	float* centroid_y, 
@@ -63,9 +63,9 @@ int KMeansGatherCuda(
 	hasCentroidChanged_h[0] = true;
 	bool* hasCentroidChanged_d;
 	allocateArray((void**)&hasCentroidChanged_d, sizeof(bool));
-	int iterations = MAX_ITER;
+	int iterations = max_iter;
 
-	for (size_t i = 0; i < MAX_ITER; i++)
+	for (size_t i = 0; i < max_iter; i++)
 	{
 		hasCentroidChanged_h[0] = false;
 		copyArrayToDevice(hasCentroidChanged_d, hasCentroidChanged_h, 0, sizeof(bool));

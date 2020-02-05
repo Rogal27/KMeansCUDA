@@ -34,7 +34,8 @@ namespace KMeans
                     array<float>^ vector_y_h,
                     array<float>^ vector_z_h,
                     int length,
-                    int k_param);
+                    int k_param,
+                    int max_iter);
                 int KMeansImageGather(
                     array<int>^ colors,
                     int length,
@@ -44,7 +45,8 @@ namespace KMeans
                     float gamma,
                     array<float>^ RGBtoXYZMatrix,
                     array<float>^ XYZtoRGBMatrix,
-                    int k_param);
+                    int k_param,
+                    int max_iter);
 
                 void Destroy(); // Helper function
             private:

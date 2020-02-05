@@ -42,12 +42,13 @@ int KMeans::Cpp::CLI::Logic::KMeansGather(
     array<float>^ vector_y_h,
     array<float>^ vector_z_h,
     int length,
-    int k_param)
+    int k_param,
+    int max_iter)
 {
     pin_ptr<float> vector_x_ptr = &vector_x_h[0];
     pin_ptr<float> vector_y_ptr = &vector_y_h[0];
     pin_ptr<float> vector_z_ptr = &vector_z_h[0];
-    int iters = _impl->KMeansGather(vector_x_ptr, vector_y_ptr, vector_z_ptr, length, k_param);
+    int iters = _impl->KMeansGather(vector_x_ptr, vector_y_ptr, vector_z_ptr, length, k_param, max_iter);
     return iters;
 }
 
@@ -60,12 +61,13 @@ int KMeans::Cpp::CLI::Logic::KMeansImageGather(
     float gamma,
     array<float>^ RGBtoXYZMatrix,
     array<float>^ XYZtoRGBMatrix,
-    int k_param)
+    int k_param,
+    int max_iter)
 {
     pin_ptr<int> colors_ptr = &colors[0];
     pin_ptr<float> RGBtoXYZMatrix_ptr = &RGBtoXYZMatrix[0];
     pin_ptr<float> XYZtoRGBMatrix_ptr = &XYZtoRGBMatrix[0];
-    int iters = _impl->KMeansImageGather(colors_ptr, length, XR, YR, ZR, gamma, RGBtoXYZMatrix_ptr, XYZtoRGBMatrix_ptr, k_param);
+    int iters = _impl->KMeansImageGather(colors_ptr, length, XR, YR, ZR, gamma, RGBtoXYZMatrix_ptr, XYZtoRGBMatrix_ptr, k_param, max_iter);
     return iters;
 }
 

@@ -9,6 +9,7 @@ int KMeansGatherCuda(
 	float* vector_z,
 	int length,
 	int k_param,
+	int max_iter,
 	int* cluster,
 	float* centroid_x,
 	float* centroid_y,

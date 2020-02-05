@@ -295,11 +295,10 @@
                      Name="KMeansTextBox"/>
             <Label Grid.Row="0" Grid.Column="3" Style="{StaticResource SmallLabelInGrid}"
                   HorizontalAlignment="Right"
-                   Content="UseLAB:"/>
-            <CheckBox Grid.Row="0" Grid.Column="4"
-                     IsChecked="{Binding useLAB, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
-                         HorizontalAlignment="Center"
-                         VerticalAlignment="Center"/>
+                   Content="MaxIter:"/>
+            <TextBox Grid.Row="0" Grid.Column="4" Style="{StaticResource TextBoxInGrid}"
+                     Text="{Binding MaxIter, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                     Name="MaxIterTextBox"/>
             <ComboBox Name="DestColorSpaceComboBox"
                       Grid.Row="1" Grid.Column="0" Style="{StaticResource ComboBoxInGrid}"
                       SelectionChanged="DestColorSpaceComboBox_SelectionChanged">

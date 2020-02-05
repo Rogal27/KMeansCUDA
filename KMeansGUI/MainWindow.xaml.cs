@@ -80,16 +80,16 @@ namespace KMeans.GUI
             }
         }
 
-        private bool _useLAB;
-        public bool useLAB
+        private int _maxIter;
+        public int MaxIter
         {
             get
             {
-                return _useLAB;
+                return _maxIter;
             }
             set
             {
-                _useLAB = value;
+                _maxIter = value;
                 NotifyPropertyChanged();
             }
         }
@@ -125,7 +125,7 @@ namespace KMeans.GUI
             DestImageCP = new ColorProfileNotifyChange(ColorProfileFactory.GetFactory().WideGamutcolorProfile);
             GrayscaleButtonClicked = false;
             KMeansParam = Globals.k_means;
-            useLAB = true;
+            MaxIter = Globals.max_iter;
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
@@ -579,21 +579,9 @@ namespace KMeans.GUI
             DoubleColor[,] LABImageArray = new DoubleColor[SourceImageColorArray.GetLength(0), SourceImageColorArray.GetLength(1)];
             int from = SourceColorSpaceComboBox.SelectedIndex;
 
-
-            if (useLAB == true)
-            {
-                ColorProfileConverter.ConvertImageToLAB(SourceImageColorArray, LABImageArray, (ColorProfileEnum)from);
-                var result = KMeansCalc.CalculateKMeans(LABImageArray, KMeansParam, Globals.max_iter, Globals.eps);
-                ColorProfileConverter.ConvertImageFromLAB(result, DestImageColorArray, (ColorProfileEnum)from);
-            }
-            else
-            {
-                ColorProfileConverter.ConvertImageToDoubleColor(SourceImageColorArray, LABImageArray);
-                var result = KMeansCalc.CalculateKMeans(LABImageArray, KMeansParam, Globals.max_iter, Globals.eps);
-                ColorProfileConverter.ConvertImageFromDoubleColor(result, DestImageColorArray);
-            }
-
-
+            ColorProfileConverter.ConvertImageToLAB(SourceImageColorArray, LABImageArray, (ColorProfileEnum)from);
+            var result = KMeansCalc.CalculateKMeans(LABImageArray, KMeansParam, Globals.max_iter, Globals.eps);
+            ColorProfileConverter.ConvertImageFromLAB(result, DestImageColorArray, (ColorProfileEnum)from);
 
             Paint.CopyToWriteableBitmap(DestImageWB, DestImageColorArray);
         }
@@ -630,14 +618,9 @@ namespace KMeans.GUI
 
             DoubleColor[,] LABImageArray = new DoubleColor[SourceImageColorArray.GetLength(0), SourceImageColorArray.GetLength(1)];
             int from = SourceColorSpaceComboBox.SelectedIndex;
-            if (useLAB == true)
-            {
-                ColorProfileConverter.ConvertImageToLAB(SourceImageColorArray, LABImageArray, (ColorProfileEnum)from);
-            }
-            else
-            {
-                ColorProfileConverter.ConvertImageToDoubleColor(SourceImageColorArray, LABImageArray);
-            }
+
+            ColorProfileConverter.ConvertImageToLAB(SourceImageColorArray, LABImageArray, (ColorProfileEnum)from);
+
 
             int rows = LABImageArray.GetLength(0);
             int cols = LABImageArray.GetLength(1);
@@ -665,7 +648,7 @@ namespace KMeans.GUI
                 //    Debug.Write($"{result[i]}, ");
                 //}
                 //Debug.WriteLine("");
-                var iters = wrapper.KMeansGather(tab1, tab2, tab3, tab1.Length, 1);
+                var iters = wrapper.KMeansGather(tab1, tab2, tab3, tab1.Length, 1, MaxIter);
                 Debug.WriteLine($"KMEANS: Iters: {iters}");
                 for (int i = 0; i < tab1.Length; i++)
                 {
@@ -673,7 +656,7 @@ namespace KMeans.GUI
                 }
 
 
-                var img_iters = wrapper.KMeansGather(vector_x, vector_y, vector_z, vector_x.Length, KMeansParam);
+                var img_iters = wrapper.KMeansGather(vector_x, vector_y, vector_z, vector_x.Length, KMeansParam, MaxIter);
                 Debug.WriteLine($"Image iterations: {img_iters}");
             }
 
@@ -687,31 +670,13 @@ namespace KMeans.GUI
                 }
             }
 
-            if (useLAB == true)
-            {
-                ColorProfileConverter.ConvertImageFromLAB(LABImageArray, DestImageColorArray, (ColorProfileEnum)from);
-            }
-            else
-            {
-                ColorProfileConverter.ConvertImageFromDoubleColor(LABImageArray, DestImageColorArray);
-            }
+            ColorProfileConverter.ConvertImageFromLAB(LABImageArray, DestImageColorArray, (ColorProfileEnum)from);
 
             Paint.CopyToWriteableBitmap(DestImageWB, DestImageColorArray);
         }
 
         private void Test2ButtonRadioButton_Click(object sender, RoutedEventArgs e)
         {
-            DoubleColor[,] LABImageArray = new DoubleColor[SourceImageColorArray.GetLength(0), SourceImageColorArray.GetLength(1)];
-            int from = SourceColorSpaceComboBox.SelectedIndex;
-            if (useLAB == true)
-            {
-                ColorProfileConverter.ConvertImageToLAB(SourceImageColorArray, LABImageArray, (ColorProfileEnum)from);
-            }
-            else
-            {
-                ColorProfileConverter.ConvertImageToDoubleColor(SourceImageColorArray, LABImageArray);
-            }
-
             int rows = SourceImageColorArray.GetLength(0);
             int cols = SourceImageColorArray.GetLength(1);
 
@@ -722,19 +687,7 @@ namespace KMeans.GUI
                 for (int y = 0; y < cols; y++)
                 {
                     colors_array[y + x * cols] = SourceImageColorArray[x, y].ToInt();
-                    //colors_array[y + x * cols] = -1;
-                    if (x == 0 && y%100==0)
-                        Debug.WriteLine($"Before y:{y}, val: {colors_array[y + x * cols]}");
                 }
-            }
-
-            if (useLAB == true)
-            {
-                ColorProfileConverter.ConvertImageFromLAB(LABImageArray, DestImageColorArray, (ColorProfileEnum)from);
-            }
-            else
-            {
-                ColorProfileConverter.ConvertImageFromDoubleColor(LABImageArray, DestImageColorArray);
             }
 
             var RGBtoXYZMatrix = SourceImageCP.RGBtoXYZ.toFloatMatrix();
@@ -748,7 +701,7 @@ namespace KMeans.GUI
 
             using (var wrapper = new Logic())
             {
-                var img_iters = wrapper.KMeansImageGather(colors_array, colors_array.Length, XR, YR, ZR, gamma, RGBtoXYZMatrix, XYZtoRGBMatrix, KMeansParam);
+                var img_iters = wrapper.KMeansImageGather(colors_array, colors_array.Length, XR, YR, ZR, gamma, RGBtoXYZMatrix, XYZtoRGBMatrix, KMeansParam, MaxIter);
                 Debug.WriteLine($"Image iterations: {img_iters}");
             }
 
@@ -757,13 +710,11 @@ namespace KMeans.GUI
             {
                 for (int y = 0; y < cols; y++)
                 {
-                    if (x == 0 && y % 100 == 0)
-                        Debug.WriteLine($"After y:{y}, val: {colors_array[y + x * cols]}");
                     DestImageColorArray[x, y] = new SimpleColor(colors_array[y + x * cols]);
                 }
             }
 
-            Paint.CopyToWriteableBitmap(DestImageWB, DestImageColorArray);
+            Paint.CopyToWriteableBitmap(DestImageWB, colors_array, rows, cols);
         }
     }
 }

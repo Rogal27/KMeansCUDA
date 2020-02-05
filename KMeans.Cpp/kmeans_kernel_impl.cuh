@@ -24,9 +24,7 @@ __device__ void ConvertToLABOneColor(int& color, float& L, float& a, float& b, f
 
 	float x = (float)R / 255.0f;
 	float y = (float)G / 255.0f;
-	float z = (float)B / 255.0f;
-
-	
+	float z = (float)B / 255.0f;	
 
 	//inverse gamma correction
 	x = powf(x, gamma);
@@ -36,15 +34,11 @@ __device__ void ConvertToLABOneColor(int& color, float& L, float& a, float& b, f
 	//to xyz (multiply by matrix)
 	float xr = RGBtoXYZmatrix[0] * x + RGBtoXYZmatrix[1] * y + RGBtoXYZmatrix[2] * z;
 	float yr = RGBtoXYZmatrix[3] * x + RGBtoXYZmatrix[4] * y + RGBtoXYZmatrix[5] * z;
-	float zr = RGBtoXYZmatrix[6] * x + RGBtoXYZmatrix[7] * y + RGBtoXYZmatrix[8] * z;
-
-	
+	float zr = RGBtoXYZmatrix[6] * x + RGBtoXYZmatrix[7] * y + RGBtoXYZmatrix[8] * z;	
 
 	xr = xr / XR;
 	yr = yr / YR;
-	zr = zr / ZR;
-
-	
+	zr = zr / ZR;	
 
 	float fx;
 	float fy;
@@ -147,7 +141,6 @@ __device__ void ConvertFromLABOneColor(int& color, float& L, float& a, float& b,
 		a = 255.0f;
 	if (b > 255.0f)
 		b = 255.0f;
-
 
 
 	unsigned char R = (unsigned char)L;
@@ -295,11 +288,5 @@ __global__ void ConvertFromLAB_kernel(
 	if (index < length)
 	{
 		ConvertFromLABOneColor(colors[index], vector_x[index], vector_y[index], vector_z[index], XYZtoRGBMatrix, XR, YR, ZR, gamma);
-		//colors[index] = 0;
-		//colors[index] |= 255 << 24;
-		//colors[index] |= 205 << 16; // R
-		//colors[index] |= 100 << 8; // G
-		//colors[index] |= 100; //B
-
 	}
 }

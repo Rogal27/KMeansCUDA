@@ -48,7 +48,8 @@ int KMeans::Cpp::Logic::KMeansGather(
 	float* vector_y_h,
 	float* vector_z_h,
 	int length,
-	int k_param)
+	int k_param,
+	int max_iter)
 {
 	const unsigned int memSizeFloat = sizeof(float) * length;
 	const unsigned int memSizeInt = sizeof(int) * length;
@@ -108,6 +109,7 @@ int KMeans::Cpp::Logic::KMeansGather(
 		vector_z_d,
 		length,
 		k_param,
+		max_iter,
 		cluster,
 		centroid_x_d,
 		centroid_y_d,
@@ -140,7 +142,8 @@ int KMeans::Cpp::Logic::KMeansImageGather(
 	float gamma,
 	float* RGBtoXYZMatrix,
 	float* XYZtoRGBMatrix,
-	int k_param)
+	int k_param,
+	int max_iter)
 {
 	const unsigned int memSizeFloat = sizeof(float) * length;
 	const unsigned int memSizeInt = sizeof(int) * length;
@@ -170,10 +173,6 @@ int KMeans::Cpp::Logic::KMeansImageGather(
 	allocateArray((void**)&centroid_z_d, centroidSize);
 	allocateArray((void**)&cluster, memSizeInt);
 
-	float* vector_x = new float[memSizeFloat];
-	float* vector_y = new float[memSizeFloat];
-	float* vector_z = new float[memSizeFloat];
-
 	srand(time(NULL));
 
 	for (size_t i = 0; i < k_param; i++)
@@ -198,17 +197,6 @@ int KMeans::Cpp::Logic::KMeansImageGather(
 		}
 	}
 
-	for (size_t i = 0; i < k_param; i++)
-	{
-		float tmp1 = centroid_x_h[i];
-		float tmp2 = centroid_y_h[i];
-		float tmp3 = centroid_z_h[i];
-		int a = 5;
-	}
-
-	//copyArrayToDevice(vector_x_d, vector_x_h, 0, memSizeFloat);
-	//copyArrayToDevice(vector_y_d, vector_y_h, 0, memSizeFloat);
-	//copyArrayToDevice(vector_z_d, vector_z_h, 0, memSizeFloat);
 	copyArrayToDevice(colors_d, colors, 0, memSizeInt);
 	copyArrayToDevice(RGBtoXYZMatrix_d, RGBtoXYZMatrix, 0, conversionArraySize);
 	copyArrayToDevice(XYZtoRGBMatrix_d, XYZtoRGBMatrix, 0, conversionArraySize);
@@ -216,11 +204,6 @@ int KMeans::Cpp::Logic::KMeansImageGather(
 	copyArrayToDevice(centroid_y_d, centroid_y_h, 0, centroidSize);
 	copyArrayToDevice(centroid_z_d, centroid_z_h, 0, centroidSize);
 
-	for (size_t i = 0; i < length; i += 1)
-	{
-		int tmp = colors[i];
-		int a = 5;
-	}
 
 	ConvertToLABCuda(
 		colors_d,
@@ -234,40 +217,20 @@ int KMeans::Cpp::Logic::KMeansImageGather(
 		vector_y_d,
 		vector_z_d);
 
-	//copyArrayFromDevice(vector_x, vector_x_d, memSizeFloat);
-	//copyArrayFromDevice(vector_y, vector_y_d, memSizeFloat);
-	//copyArrayFromDevice(vector_z, vector_z_d, memSizeFloat);
-	//for (size_t i = 0; i < length; i += 100)
-	//{
-	//	float tmp1 = vector_x[i];
-	//	float tmp2 = vector_y[i];
-	//	float tmp3 = vector_z[i];
-	//	int a =5;
-	//}
-
 	cudaDeviceSynchronize();
 
-	//int iterations = 0;
 	int iterations = KMeansGatherCuda(
 		vector_x_d,
 		vector_y_d,
 		vector_z_d,
 		length,
 		k_param,
+		max_iter,
 		cluster,
 		centroid_x_d,
 		centroid_y_d,
 		centroid_z_d);
 
-	//copyArrayFromDevice(vector_x, vector_x_d, memSizeFloat);
-	//copyArrayFromDevice(vector_y, vector_y_d, memSizeFloat);
-	//copyArrayFromDevice(vector_z, vector_z_d, memSizeFloat);
-	//for (size_t i = 0; i < length; i += 100)
-	//{
-	//	float tmp1 = vector_x[i];
-	//	float tmp2 = vector_y[i];
-	//	float tmp3 = vector_z[i];
-	//}
 	cudaDeviceSynchronize();
 
 	ConvertFromLABCuda(
@@ -282,24 +245,8 @@ int KMeans::Cpp::Logic::KMeansImageGather(
 		vector_y_d,
 		vector_z_d);
 
-	copyArrayFromDevice(vector_x, vector_x_d, memSizeFloat);
-	copyArrayFromDevice(vector_y, vector_y_d, memSizeFloat);
-	copyArrayFromDevice(vector_z, vector_z_d, memSizeFloat);
-	for (size_t i = 0; i < length; i += 100)
-	{
-		float tmp1 = vector_x[i];
-		float tmp2 = vector_y[i];
-		float tmp3 = vector_z[i];
-		int a =5;
-	}
-
 	copyArrayFromDevice(colors, colors_d, memSizeInt);
-	;
-	for (size_t i = 0; i < length; i+=100)
-	{
-		int tmp = colors[i];
-		int a = 5;
-	}
+
 	freeArray(colors_d);
 	freeArray(RGBtoXYZMatrix_d);
 	freeArray(XYZtoRGBMatrix_d);
@@ -315,10 +262,6 @@ int KMeans::Cpp::Logic::KMeansImageGather(
 	delete[] centroid_x_h;
 	delete[] centroid_z_h;
 	delete[] centroid_y_h;
-
-	delete[] vector_x;
-	delete[] vector_y;
-	delete[] vector_z;
 
 	return iterations;
 }
