@@ -14,6 +14,28 @@ int KMeansGatherCuda(
 	float* centroid_x,
 	float* centroid_y,
 	float* centroid_z);
+int KMeansReduceByKeyCuda(
+	float* vector_x,
+	float* vector_y,
+	float* vector_z,
+	int length,
+	int k_param,
+	int max_iter,
+	int* cluster,
+	float* centroid_x,
+	float* centroid_y,
+	float* centroid_z);
+int KMeansScatterCuda(
+	float* vector_x,
+	float* vector_y,
+	float* vector_z,
+	int length,
+	int k_param,
+	int max_iter,
+	int* cluster,
+	float* centroid_x,
+	float* centroid_y,
+	float* centroid_z);
 void ConvertToLABCuda(
 	int* colors,
 	int length,

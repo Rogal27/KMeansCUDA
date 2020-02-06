@@ -319,7 +319,7 @@ namespace KMeans.GUI
             }
             foreach (var box in destTextBoxes)
             {
-                if (box.Name == "KMeansTextBox")
+                if (box.Name == "KMeansTextBox" || box.Name == "MaxIterTextBox")
                 {
                     if(int.TryParse(box.Text,out int res)==true)
                     {
