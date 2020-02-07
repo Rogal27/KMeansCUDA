@@ -407,25 +407,46 @@ __global__ void CalculateNewVectorsReduceByKey_kernel(
 	int* cluster,
 	float* centroid_x,
 	float* centroid_y,
-	float* centroid_z)
+	float* centroid_z,
+	int* vector_indexes)
 {
 	unsigned int index = blockIdx.x * blockDim.x + threadIdx.x;
 	if (index < length)
 	{
-		float minDist = Dist(vector_x[index], vector_y[index], vector_z[index], centroid_x[0], centroid_y[0], centroid_z[0]);
-		int minIndex = 0;
-		float dist;
-		for (size_t i = 1; i < k_param; i++)
-		{
-			dist = Dist(vector_x[index], vector_y[index], vector_z[index], centroid_x[i], centroid_y[i], centroid_z[i]);
-			if (minDist > dist)
-			{
-				minDist = dist;
-				minIndex = i;
-			}
-		}
-		vector_x[index] = centroid_x[minIndex];
-		vector_y[index] = centroid_y[minIndex];
-		vector_z[index] = centroid_z[minIndex];
+		vector_x[index] = centroid_x[cluster[vector_indexes[index]]];
+		vector_y[index] = centroid_y[cluster[vector_indexes[index]]];
+		vector_z[index] = centroid_z[cluster[vector_indexes[index]]];
 	}
 }
+
+//__global__ void CalculateNewVectorsReduceByKey_kernel(
+//	float* vector_x,
+//	float* vector_y,
+//	float* vector_z,
+//	int length,
+//	int k_param,
+//	int* cluster,
+//	float* centroid_x,
+//	float* centroid_y,
+//	float* centroid_z)
+//{
+//	unsigned int index = blockIdx.x * blockDim.x + threadIdx.x;
+//	if (index < length)
+//	{
+//		float minDist = Dist(vector_x[index], vector_y[index], vector_z[index], centroid_x[0], centroid_y[0], centroid_z[0]);
+//		int minIndex = 0;
+//		float dist;
+//		for (size_t i = 1; i < k_param; i++)
+//		{
+//			dist = Dist(vector_x[index], vector_y[index], vector_z[index], centroid_x[i], centroid_y[i], centroid_z[i]);
+//			if (minDist > dist)
+//			{
+//				minDist = dist;
+//				minIndex = i;
+//			}
+//		}
+//		vector_x[index] = centroid_x[minIndex];
+//		vector_y[index] = centroid_y[minIndex];
+//		vector_z[index] = centroid_z[minIndex];
+//	}
+//}

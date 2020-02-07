@@ -11,6 +11,7 @@
 #include <thrust/sort.h>
 #include <thrust/execution_policy.h>
 #include <thrust/iterator/constant_iterator.h>
+#include <thrust/sequence.h>
 
 constexpr int THREADS = 256;
 constexpr int SCATTER_THREADS = 1024;
@@ -188,15 +189,21 @@ int KMeansReduceByKeyCuda(
 	float* vector_z_sum_d;
 	int* cluster_sum_d;
 	int* cluster_values_d;
+	int* vector_indexes;
 	int memFloatSize = k_param * sizeof(float);
 	int memIntSize = k_param * sizeof(int);
+	int memIntVectorSize = length * sizeof(int);
 
 	allocateArray((void**)&vector_x_sum_d, memFloatSize);
 	allocateArray((void**)&vector_y_sum_d, memFloatSize);
 	allocateArray((void**)&vector_z_sum_d, memFloatSize);
 	allocateArray((void**)&cluster_sum_d, memIntSize);
 	allocateArray((void**)&cluster_values_d, memIntSize);
+	allocateArray((void**)&vector_indexes, memIntVectorSize);
 
+	thrust::sequence(thrust::device, vector_indexes, vector_indexes + length, 0, 1);
+
+	auto vector_iterator_sort_first = thrust::make_zip_iterator(thrust::make_tuple(vector_x, vector_y, vector_z, thrust::make_constant_iterator(1), vector_indexes));
 	auto vector_iterator_first = thrust::make_zip_iterator(thrust::make_tuple(vector_x, vector_y, vector_z, thrust::make_constant_iterator(1)));
 	//auto vector_iterator_first = thrust::make_zip_iterator(thrust::make_tuple(vector_x, vector_y, vector_z));
 	auto output_iterator_first = thrust::make_zip_iterator(thrust::make_tuple(vector_x_sum_d, vector_y_sum_d, vector_z_sum_d, cluster_sum_d));
@@ -260,7 +267,8 @@ int KMeansReduceByKeyCuda(
 		cluster,
 		centroid_x,
 		centroid_y,
-		centroid_z);
+		centroid_z,
+		vector_indexes);
 
 	freeArray(hasCentroidChanged_d);
 	freeArray(vector_x_sum_d);
@@ -271,6 +279,7 @@ int KMeansReduceByKeyCuda(
 	freeArray(vector_x);
 	freeArray(vector_y);
 	freeArray(vector_z);
+	freeArray(vector_indexes);
 	//delete [] hasCentroidChanged_h;
 
 	return iterations;
