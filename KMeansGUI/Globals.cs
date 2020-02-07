@@ -9,7 +9,7 @@ namespace KMeans.GUI
 {
     public static class Globals
     {
-        public static string WindowName = "GK Project 3";
+        public static string WindowName = "Cuda Kmeans";
         public static string ImagesFolderPath = "..\\..\\Images\\";
         public static string DefaultImageSource = "..\\..\\Images\\image1.jpg";
         public static CultureInfo culture = CultureInfo.CreateSpecificCulture("en-US");
@@ -22,7 +22,7 @@ namespace KMeans.GUI
 
         //kmeans
         public static int k_means = 10;
-        public static int max_iter = 50;
+        public static int max_iter = 20;
         public static double eps = 1e-4;
 
     }

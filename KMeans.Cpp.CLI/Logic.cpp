@@ -52,7 +52,7 @@ int KMeans::Cpp::CLI::Logic::KMeansGather(
     return iters;
 }
 
-int KMeans::Cpp::CLI::Logic::KMeansImageGather(
+int KMeans::Cpp::CLI::Logic::KMeansImage(
     array<int>^ colors,
     int length,
     float XR,
@@ -62,12 +62,13 @@ int KMeans::Cpp::CLI::Logic::KMeansImageGather(
     array<float>^ RGBtoXYZMatrix,
     array<float>^ XYZtoRGBMatrix,
     int k_param,
-    int max_iter)
+    int max_iter,
+    int param)
 {
     pin_ptr<int> colors_ptr = &colors[0];
     pin_ptr<float> RGBtoXYZMatrix_ptr = &RGBtoXYZMatrix[0];
     pin_ptr<float> XYZtoRGBMatrix_ptr = &XYZtoRGBMatrix[0];
-    int iters = _impl->KMeansImageGather(colors_ptr, length, XR, YR, ZR, gamma, RGBtoXYZMatrix_ptr, XYZtoRGBMatrix_ptr, k_param, max_iter);
+    int iters = _impl->KMeansImage(colors_ptr, length, XR, YR, ZR, gamma, RGBtoXYZMatrix_ptr, XYZtoRGBMatrix_ptr, k_param, max_iter, param);
     return iters;
 }
 

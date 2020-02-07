@@ -7,6 +7,7 @@ constexpr float EPS = 1e-4f;
 constexpr float k_modifier = 903.3f;
 constexpr float eps_modifier = 0.008856f;
 
+
 __device__ float Dist(const float& x1, const float& y1, const float& z1, const float& x2, const float& y2, const float& z2)
 {
 	float dx = x1 - x2;
@@ -154,7 +155,7 @@ __device__ void ConvertFromLABOneColor(int& color, float& L, float& a, float& b,
 	color |= B; //B
 }
 
-__global__ void CalculateDistancesGather_kernel(
+__global__ void CalculateDistances_kernel(
 	float* vector_x,
 	float* vector_y,
 	float* vector_z,
@@ -197,18 +198,17 @@ __global__ void CalculateNewCentroidsGather_kernel(
 	bool* changed)
 {
 	unsigned int index = blockIdx.x * blockDim.x + threadIdx.x;
-	bool hasChanged = false;
 	if (index < k_param)
 	{
 		float dist_sum_x = 0.0f;
 		float dist_sum_y = 0.0f;
 		float dist_sum_z = 0.0f;
-		int sum = 0;
-		for (size_t i = 0; i < length; i++)
+		long sum = 0;
+		for (long i = 0; i < length; i++)
 		{
 			if (cluster[i] == index)
 			{
-				dist_sum_x += vector_x[i];
+				dist_sum_x += vector_x[i];				
 				dist_sum_y += vector_y[i];
 				dist_sum_z += vector_z[i];
 				sum++;
@@ -226,7 +226,7 @@ __global__ void CalculateNewCentroidsGather_kernel(
 				centroid_x[index] = dist_sum_x;
 				centroid_y[index] = dist_sum_y;
 				centroid_z[index] = dist_sum_z;
-				hasChanged = true;
+				
 				changed[0] = true;
 			}
 		}
@@ -288,5 +288,144 @@ __global__ void ConvertFromLAB_kernel(
 	if (index < length)
 	{
 		ConvertFromLABOneColor(colors[index], vector_x[index], vector_y[index], vector_z[index], XYZtoRGBMatrix, XR, YR, ZR, gamma);
+	}
+}
+
+__global__ void CalculatePartialSumsScatter_kernel(
+	float* vector_x,
+	float* vector_y,
+	float* vector_z,
+	int length,
+	int k_param,
+	int* cluster,
+	float* scatter_array_x,
+	float* scatter_array_y,
+	float* scatter_array_z,
+	int* scatter_array_count,
+	int scatter_threads_count)
+{
+	int gap = blockDim.x * gridDim.x;
+	unsigned int index = blockIdx.x * blockDim.x + threadIdx.x;
+	
+	for (size_t i = index; i < length; i += gap)
+	{
+		int row = scatter_threads_count * cluster[i];
+		scatter_array_x[index + row] += vector_x[i];
+		scatter_array_y[index + row] += vector_y[i];
+		scatter_array_z[index + row] += vector_z[i];
+		scatter_array_count[index + row]++;
+	}
+}
+
+__global__ void CalculateNewCentroidsScatter_kernel(
+	int k_param,
+	float* centroid_x,
+	float* centroid_y,
+	float* centroid_z,
+	bool* changed,
+	float* scatter_array_x,
+	float* scatter_array_y,
+	float* scatter_array_z,
+	int* scatter_array_count,
+	int scatter_threads_count)
+{
+	unsigned int index = blockIdx.x * blockDim.x + threadIdx.x;
+	if (index < k_param)
+	{
+		float dist_sum_x = 0.0f;
+		float dist_sum_y = 0.0f;
+		float dist_sum_z = 0.0f;
+		int row = scatter_threads_count * index;
+		int sum = 0;
+		for (size_t i = 0; i < scatter_threads_count; i++)
+		{
+			dist_sum_x += scatter_array_x[row + i];
+			dist_sum_y += scatter_array_y[row + i];
+			dist_sum_z += scatter_array_z[row + i];
+			sum += scatter_array_count[row + i];
+		}
+
+		if (sum != 0)
+		{
+			dist_sum_x /= sum;
+			dist_sum_y /= sum;
+			dist_sum_z /= sum;
+			float dist = Dist(dist_sum_x, dist_sum_y, dist_sum_z, centroid_x[index], centroid_y[index], centroid_z[index]);
+			if (dist > EPS)
+			{
+				centroid_x[index] = dist_sum_x;
+				centroid_y[index] = dist_sum_y;
+				centroid_z[index] = dist_sum_z;
+
+				changed[0] = true;
+			}
+		}
+	}
+}
+
+__global__ void CalculateNewCentroidsReduceByKey_kernel(
+	float* centroid_x,
+	float* centroid_y,
+	float* centroid_z,
+	bool* changed,
+	float* vector_x_sum,
+	float* vector_y_sum,
+	float* vector_z_sum,
+	int* cluster_sum,
+	int* cluster_keys,
+	int cluster_keys_length)
+{
+	unsigned int index = blockIdx.x * blockDim.x + threadIdx.x;
+	if (index < cluster_keys_length)
+	{
+		int cluster_nr = cluster_keys[index];
+
+		if (cluster_sum[index] != 0)
+		{
+			float dist_sum_x = vector_x_sum[index] / cluster_sum[index];
+			float dist_sum_y = vector_y_sum[index] / cluster_sum[index];
+			float dist_sum_z = vector_z_sum[index] / cluster_sum[index];
+			float dist = Dist(dist_sum_x, dist_sum_y, dist_sum_z, centroid_x[cluster_nr], centroid_y[cluster_nr], centroid_z[cluster_nr]);
+			if (dist > EPS)
+			{
+				centroid_x[cluster_nr] = dist_sum_x;
+				centroid_y[cluster_nr] = dist_sum_y;
+				centroid_z[cluster_nr] = dist_sum_z;
+
+				changed[0] = true;
+			}
+		}
+	}
+}
+
+__global__ void CalculateNewVectorsReduceByKey_kernel(
+	float* vector_x,
+	float* vector_y,
+	float* vector_z,
+	int length,
+	int k_param,
+	int* cluster,
+	float* centroid_x,
+	float* centroid_y,
+	float* centroid_z)
+{
+	unsigned int index = blockIdx.x * blockDim.x + threadIdx.x;
+	if (index < length)
+	{
+		float minDist = Dist(vector_x[index], vector_y[index], vector_z[index], centroid_x[0], centroid_y[0], centroid_z[0]);
+		int minIndex = 0;
+		float dist;
+		for (size_t i = 1; i < k_param; i++)
+		{
+			dist = Dist(vector_x[index], vector_y[index], vector_z[index], centroid_x[i], centroid_y[i], centroid_z[i]);
+			if (minDist > dist)
+			{
+				minDist = dist;
+				minIndex = i;
+			}
+		}
+		vector_x[index] = centroid_x[minIndex];
+		vector_y[index] = centroid_y[minIndex];
+		vector_z[index] = centroid_z[minIndex];
 	}
 }

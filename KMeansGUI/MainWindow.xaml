@@ -104,7 +104,7 @@
             <ColumnDefinition Width="*"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
-        <WrapPanel Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Background="#1e2d3b">
+        <WrapPanel Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Background="#1e2d3b" Name="MenuWrapPanel">
             <RadioButton Style="{StaticResource MenuButtonStyle}"
                          Content="Wczytaj zdjęcie"
                          Click="LoadImageRadioButton_Click"/>
@@ -120,15 +120,21 @@
                          Content="Szarość"
                          Click="GrayscaleRadioButton_Click"/>
             <RadioButton Style="{StaticResource MenuButtonStyle}"
-                         Content="K-Means"
+                         Content="K-Means CPU"
                          Click="KMeansRadioButton_Click"/>
             <RadioButton Style="{StaticResource MenuButtonStyle}"
-                         Content="Test"
-                         Click="TestButtonRadioButton_Click"/>
+                         Content="K-Means CPU async"
+                         Click="KMeansAsyncRadioButton_Click"/>
             <RadioButton Style="{StaticResource MenuButtonStyle}"
-                         Content="Test2"
+                         Content="Gather"
+                         Click="GatherGPUButtonRadioButton_Click"/>
+            <RadioButton Style="{StaticResource MenuButtonStyle}"
+                         Content="Scatter"                         
+                         Click="ScatterGPUButtonRadioButton_Click"/>
+            <RadioButton Style="{StaticResource MenuButtonStyle}"
+                         Content="ReduceByKey"
                          BorderThickness="0"
-                         Click="Test2ButtonRadioButton_Click"/>
+                         Click="ReduceByKeyGPUButtonRadioButton_Click"/>
         </WrapPanel>
         <!--Source Grid-->
         <Grid Name="SourceGrid" Grid.Row="1" Grid.Column="0" Margin="20,0,0,0"

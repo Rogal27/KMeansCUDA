@@ -133,7 +133,7 @@ int KMeans::Cpp::Logic::KMeansGather(
 	return iterations;
 }
 
-int KMeans::Cpp::Logic::KMeansImageGather(
+int KMeans::Cpp::Logic::KMeansImage(
 	int* colors,
 	int length,
 	float XR,
@@ -143,7 +143,8 @@ int KMeans::Cpp::Logic::KMeansImageGather(
 	float* RGBtoXYZMatrix,
 	float* XYZtoRGBMatrix,
 	int k_param,
-	int max_iter)
+	int max_iter,
+	int param)
 {
 	const unsigned int memSizeFloat = sizeof(float) * length;
 	const unsigned int memSizeInt = sizeof(int) * length;
@@ -219,17 +220,50 @@ int KMeans::Cpp::Logic::KMeansImageGather(
 
 	cudaDeviceSynchronize();
 
-	int iterations = KMeansGatherCuda(
-		vector_x_d,
-		vector_y_d,
-		vector_z_d,
-		length,
-		k_param,
-		max_iter,
-		cluster,
-		centroid_x_d,
-		centroid_y_d,
-		centroid_z_d);
+	int iterations = -1;
+
+	if (param == 0)
+	{
+		iterations = KMeansGatherCuda(
+			vector_x_d,
+			vector_y_d,
+			vector_z_d,
+			length,
+			k_param,
+			max_iter,
+			cluster,
+			centroid_x_d,
+			centroid_y_d,
+			centroid_z_d);
+	}
+	else if (param == 1)
+	{
+		iterations = KMeansScatterCuda(
+			vector_x_d,
+			vector_y_d,
+			vector_z_d,
+			length,
+			k_param,
+			max_iter,
+			cluster,
+			centroid_x_d,
+			centroid_y_d,
+			centroid_z_d);
+	}
+	else if (param == 2)
+	{
+		iterations = KMeansReduceByKeyCuda(
+			vector_x_d,
+			vector_y_d,
+			vector_z_d,
+			length,
+			k_param,
+			max_iter,
+			cluster,
+			centroid_x_d,
+			centroid_y_d,
+			centroid_z_d);
+	}
 
 	cudaDeviceSynchronize();
 

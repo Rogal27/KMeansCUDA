@@ -96,6 +96,7 @@ namespace KMeans.GUI
 
         private bool GrayscaleButtonClicked;
 
+        private BackgroundWorker worker = new BackgroundWorker();
 
         public MainWindow()
         {
@@ -126,6 +127,8 @@ namespace KMeans.GUI
             GrayscaleButtonClicked = false;
             KMeansParam = Globals.k_means;
             MaxIter = Globals.max_iter;
+            worker.DoWork += worker_DoWork;
+            worker.RunWorkerCompleted += worker_RunWorkerCompleted;
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
@@ -576,14 +579,48 @@ namespace KMeans.GUI
 
         private void KMeansRadioButton_Click(object sender, RoutedEventArgs e)
         {
+            worker.RunWorkerAsync(WorkerTask.KMeansCPU);
+        }
+
+        private void KMeansAsyncRadioButton_Click(object sender, RoutedEventArgs e)
+        {
+            worker.RunWorkerAsync(WorkerTask.KMeansCPUAsync);
+        }
+
+        private void KMeansCPU(bool async = false)
+        {
             DoubleColor[,] LABImageArray = new DoubleColor[SourceImageColorArray.GetLength(0), SourceImageColorArray.GetLength(1)];
-            int from = SourceColorSpaceComboBox.SelectedIndex;
+            var cp = SourceImageColorProfile;
 
-            ColorProfileConverter.ConvertImageToLAB(SourceImageColorArray, LABImageArray, (ColorProfileEnum)from);
-            var result = KMeansCalc.CalculateKMeans(LABImageArray, KMeansParam, Globals.max_iter, Globals.eps);
-            ColorProfileConverter.ConvertImageFromLAB(result, DestImageColorArray, (ColorProfileEnum)from);
+            var start1 = DateTime.Now;
 
-            Paint.CopyToWriteableBitmap(DestImageWB, DestImageColorArray);
+            ColorProfileConverter.ConvertImageToLAB(SourceImageColorArray, LABImageArray, cp);
+            DoubleColor[,] result;
+            if (async == false)
+            {
+                result = KMeansCalc.CalculateKMeans(LABImageArray, KMeansParam, Globals.max_iter, Globals.eps);
+            }
+            else
+            {
+                result = KMeansCalc.CalculateKMeansAsync(LABImageArray, KMeansParam, Globals.max_iter, Globals.eps);
+            }
+            ColorProfileConverter.ConvertImageFromLAB(result, DestImageColorArray, cp);
+
+            var end = DateTime.Now;
+
+            string s = "";
+            if (async == true)
+            {
+                s = "[ASYNC]";
+            }
+
+            Debug.WriteLine($"CPU TIME{s}: {end - start1}");
+
+            Dispatcher.Invoke(() =>
+            {
+                Paint.CopyToWriteableBitmap(DestImageWB, DestImageColorArray);
+            });
+            
         }
 
         private void TestButtonRadioButton_Click(object sender, RoutedEventArgs e)
@@ -675,8 +712,11 @@ namespace KMeans.GUI
             Paint.CopyToWriteableBitmap(DestImageWB, DestImageColorArray);
         }
 
-        private void Test2ButtonRadioButton_Click(object sender, RoutedEventArgs e)
+        //param 0-gather, 1-scatter, 2-reduce_by_key
+        private void KMeansGPULaunch(int param)
         {
+            var start1 = DateTime.Now;
+
             int rows = SourceImageColorArray.GetLength(0);
             int cols = SourceImageColorArray.GetLength(1);
 
@@ -699,12 +739,24 @@ namespace KMeans.GUI
             float ZR = (float)ZR_double;
             float gamma = (float)SourceImageCP.Gamma;
 
+            var start2 = DateTime.Now;
+
             using (var wrapper = new Logic())
             {
-                var img_iters = wrapper.KMeansImageGather(colors_array, colors_array.Length, XR, YR, ZR, gamma, RGBtoXYZMatrix, XYZtoRGBMatrix, KMeansParam, MaxIter);
-                Debug.WriteLine($"Image iterations: {img_iters}");
+                try
+                {
+                    var img_iters = wrapper.KMeansImage(colors_array, colors_array.Length, XR, YR, ZR, gamma, RGBtoXYZMatrix, XYZtoRGBMatrix, KMeansParam, MaxIter, param);
+                    Debug.WriteLine($"Image iterations: {img_iters}");
+                }
+                catch(Exception e)
+                {
+                    Debug.WriteLine($"Unexpected error: {e.Message}");
+                    return;
+                }
+                
             }
 
+            var end = DateTime.Now;
 
             for (int x = 0; x < rows; x++)
             {
@@ -714,7 +766,101 @@ namespace KMeans.GUI
                 }
             }
 
-            Paint.CopyToWriteableBitmap(DestImageWB, colors_array, rows, cols);
+            Dispatcher.Invoke(() =>
+            {
+                Paint.CopyToWriteableBitmap(DestImageWB, colors_array, rows, cols);
+            });
+
+            string method = "NONE";
+            if (param == 0)
+            {
+                method = "GATHER";
+            }
+            else if (param == 1)
+            {
+                method = "SCATTER";
+            }
+            else if (param == 2) 
+            {
+                method = "RBK";
+            }
+
+            Debug.WriteLine($"GPU TIME[{method}]: {end - start2} , with memory allocation: {end - start1}");
         }
+
+        private void GatherGPUButtonRadioButton_Click(object sender, RoutedEventArgs e)
+        {
+            worker.RunWorkerAsync(WorkerTask.Gather);
+        }
+        private void ScatterGPUButtonRadioButton_Click(object sender, RoutedEventArgs e)
+        {
+            worker.RunWorkerAsync(WorkerTask.Scatter);
+        }
+        private void ReduceByKeyGPUButtonRadioButton_Click(object sender, RoutedEventArgs e)
+        {
+            worker.RunWorkerAsync(WorkerTask.ReduceByKey);
+        }
+
+        private void worker_DoWork(object sender, DoWorkEventArgs e)
+        {
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                Mouse.OverrideCursor = Cursors.Wait;
+                EnableButtons(false);
+            });
+            if (e.Argument is WorkerTask wt)
+            {
+                switch (wt)
+                {
+                    case WorkerTask.KMeansCPU:
+                        KMeansCPU();
+                        break;
+                    case WorkerTask.KMeansCPUAsync:
+                        KMeansCPU(true);
+                        break;
+                    case WorkerTask.Gather:
+                        KMeansGPULaunch(0);
+                        break;
+                    case WorkerTask.Scatter:
+                        KMeansGPULaunch(1);
+                        break;
+                    case WorkerTask.ReduceByKey:
+                        KMeansGPULaunch(2);
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+
+        private void worker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            EnableButtons();
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                Mouse.OverrideCursor = null;
+            });
+        }
+
+        private void EnableButtons(bool state = true)
+        {
+            SourceGrid.IsEnabled = state;
+            DestGrid.IsEnabled = state;
+            foreach (RadioButton rb in MenuWrapPanel.Children)
+            {
+                rb.IsEnabled = state;
+            }
+        }
+
+        enum WorkerTask
+        {
+            KMeansCPU,
+            KMeansCPUAsync,
+            Gather,
+            Scatter,
+            ReduceByKey
+        }
+
+        
     }
 }

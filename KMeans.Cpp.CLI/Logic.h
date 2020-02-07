@@ -36,7 +36,8 @@ namespace KMeans
                     int length,
                     int k_param,
                     int max_iter);
-                int KMeansImageGather(
+                //param 0-gather, 1-scatter, 2-reduce_by_key
+                int KMeansImage(
                     array<int>^ colors,
                     int length,
                     float XR,
@@ -46,7 +47,8 @@ namespace KMeans
                     array<float>^ RGBtoXYZMatrix,
                     array<float>^ XYZtoRGBMatrix,
                     int k_param,
-                    int max_iter);
+                    int max_iter,
+                    int param);
 
                 void Destroy(); // Helper function
             private:
