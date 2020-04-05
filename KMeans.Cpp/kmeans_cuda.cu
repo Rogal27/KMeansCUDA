@@ -226,7 +226,7 @@ int KMeansReduceByKeyCuda(
 
 		threadSync();
 
-		thrust::sort_by_key(thrust::device, cluster, cluster + length, vector_iterator_first);
+		thrust::sort_by_key(thrust::device, cluster, cluster + length, vector_iterator_sort_first);
 
 		auto result = thrust::reduce_by_key(thrust::device, cluster, cluster + length, vector_iterator_first, cluster_values_d, output_iterator_first, binary_pred, TupleSum());
 
