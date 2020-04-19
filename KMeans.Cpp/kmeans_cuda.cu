@@ -199,11 +199,11 @@ int KMeansReduceByKeyCuda(
 	allocateArray((void**)&vector_z_sum_d, memFloatSize);
 	allocateArray((void**)&cluster_sum_d, memIntSize);
 	allocateArray((void**)&cluster_values_d, memIntSize);
-	allocateArray((void**)&vector_indexes, memIntVectorSize);
+	//allocateArray((void**)&vector_indexes, memIntVectorSize);
 
-	thrust::sequence(thrust::device, vector_indexes, vector_indexes + length, 0, 1);
+	//thrust::sequence(thrust::device, vector_indexes, vector_indexes + length, 0, 1);
 
-	auto vector_iterator_sort_first = thrust::make_zip_iterator(thrust::make_tuple(vector_x, vector_y, vector_z, thrust::make_constant_iterator(1), vector_indexes));
+	//auto vector_iterator_sort_first = thrust::make_zip_iterator(thrust::make_tuple(vector_x, vector_y, vector_z, thrust::make_constant_iterator(1), vector_indexes));
 	auto vector_iterator_first = thrust::make_zip_iterator(thrust::make_tuple(vector_x, vector_y, vector_z, thrust::make_constant_iterator(1)));
 	//auto vector_iterator_first = thrust::make_zip_iterator(thrust::make_tuple(vector_x, vector_y, vector_z));
 	auto output_iterator_first = thrust::make_zip_iterator(thrust::make_tuple(vector_x_sum_d, vector_y_sum_d, vector_z_sum_d, cluster_sum_d));
@@ -226,7 +226,8 @@ int KMeansReduceByKeyCuda(
 
 		threadSync();
 
-		thrust::sort_by_key(thrust::device, cluster, cluster + length, vector_iterator_sort_first);
+		//thrust::sort_by_key(thrust::device, cluster, cluster + length, vector_iterator_sort_first);
+		thrust::sort_by_key(thrust::device, cluster, cluster + length, vector_iterator_first);
 
 		auto result = thrust::reduce_by_key(thrust::device, cluster, cluster + length, vector_iterator_first, cluster_values_d, output_iterator_first, binary_pred, TupleSum());
 
@@ -267,8 +268,7 @@ int KMeansReduceByKeyCuda(
 		cluster,
 		centroid_x,
 		centroid_y,
-		centroid_z,
-		vector_indexes);
+		centroid_z);
 
 	freeArray(hasCentroidChanged_d);
 	freeArray(vector_x_sum_d);
@@ -279,7 +279,7 @@ int KMeansReduceByKeyCuda(
 	freeArray(vector_x);
 	freeArray(vector_y);
 	freeArray(vector_z);
-	freeArray(vector_indexes);
+	//freeArray(vector_indexes);
 	//delete [] hasCentroidChanged_h;
 
 	return iterations;
