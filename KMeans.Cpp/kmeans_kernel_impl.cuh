@@ -7,7 +7,6 @@ constexpr float EPS = 1e-4f;
 constexpr float k_modifier = 903.3f;
 constexpr float eps_modifier = 0.008856f;
 
-
 __device__ float Dist(const float& x1, const float& y1, const float& z1, const float& x2, const float& y2, const float& z2)
 {
 	float dx = x1 - x2;
@@ -25,7 +24,7 @@ __device__ void ConvertToLABOneColor(int& color, float& L, float& a, float& b, f
 
 	float x = (float)R / 255.0f;
 	float y = (float)G / 255.0f;
-	float z = (float)B / 255.0f;	
+	float z = (float)B / 255.0f;
 
 	//inverse gamma correction
 	x = powf(x, gamma);
@@ -35,11 +34,11 @@ __device__ void ConvertToLABOneColor(int& color, float& L, float& a, float& b, f
 	//to xyz (multiply by matrix)
 	float xr = RGBtoXYZmatrix[0] * x + RGBtoXYZmatrix[1] * y + RGBtoXYZmatrix[2] * z;
 	float yr = RGBtoXYZmatrix[3] * x + RGBtoXYZmatrix[4] * y + RGBtoXYZmatrix[5] * z;
-	float zr = RGBtoXYZmatrix[6] * x + RGBtoXYZmatrix[7] * y + RGBtoXYZmatrix[8] * z;	
+	float zr = RGBtoXYZmatrix[6] * x + RGBtoXYZmatrix[7] * y + RGBtoXYZmatrix[8] * z;
 
 	xr = xr / XR;
 	yr = yr / YR;
-	zr = zr / ZR;	
+	zr = zr / ZR;
 
 	float fx;
 	float fy;
@@ -71,7 +70,7 @@ __device__ void ConvertToLABOneColor(int& color, float& L, float& a, float& b, f
 	{
 		fz = (k_modifier * zr + 16.0f) / 116.0f;
 	}
-	
+
 	L = 116.0f * fy - 16.0f;
 	a = 500.0f * (fx - fy);
 	b = 200.0f * (fy - fz);
@@ -87,14 +86,13 @@ __device__ void ConvertFromLABOneColor(int& color, float& L, float& a, float& b,
 	float fx = a / 500.0f + fy;
 	float fz = fy - b / 200.0f;
 
-
 	xr = powf(fx, 3.0f);
 	if (xr <= eps_modifier)
 	{
 		xr = (116.0f * fx - 16.0f) / k_modifier;
 	}
 
-	if (L > k_modifier* eps_modifier)
+	if (L > k_modifier * eps_modifier)
 	{
 		yr = powf((L + 16.0f) / 116.0f, 3.0f);
 	}
@@ -113,11 +111,9 @@ __device__ void ConvertFromLABOneColor(int& color, float& L, float& a, float& b,
 	float y = yr * YR;
 	float z = zr * ZR;
 
-
 	L = XYZtoRGBmatrix[0] * x + XYZtoRGBmatrix[1] * y + XYZtoRGBmatrix[2] * z;
 	a = XYZtoRGBmatrix[3] * x + XYZtoRGBmatrix[4] * y + XYZtoRGBmatrix[5] * z;
 	b = XYZtoRGBmatrix[6] * x + XYZtoRGBmatrix[7] * y + XYZtoRGBmatrix[8] * z;
-	
 
 	float inv_gamma = 1.0f / gamma;
 
@@ -128,7 +124,7 @@ __device__ void ConvertFromLABOneColor(int& color, float& L, float& a, float& b,
 	L *= 255.0f;
 	a *= 255.0f;
 	b *= 255.0f;
-	
+
 	if (L < 0.0f)
 		L = 0.0f;
 	if (a < 0.0f)
@@ -142,7 +138,6 @@ __device__ void ConvertFromLABOneColor(int& color, float& L, float& a, float& b,
 		a = 255.0f;
 	if (b > 255.0f)
 		b = 255.0f;
-
 
 	unsigned char R = (unsigned char)L;
 	unsigned char G = (unsigned char)a;
@@ -208,13 +203,13 @@ __global__ void CalculateNewCentroidsGather_kernel(
 		{
 			if (cluster[i] == index)
 			{
-				dist_sum_x += vector_x[i];				
+				dist_sum_x += vector_x[i];
 				dist_sum_y += vector_y[i];
 				dist_sum_z += vector_z[i];
 				sum++;
 			}
 		}
-		
+
 		if (sum != 0)
 		{
 			dist_sum_x /= sum;
@@ -226,7 +221,7 @@ __global__ void CalculateNewCentroidsGather_kernel(
 				centroid_x[index] = dist_sum_x;
 				centroid_y[index] = dist_sum_y;
 				centroid_z[index] = dist_sum_z;
-				
+
 				changed[0] = true;
 			}
 		}
@@ -306,7 +301,7 @@ __global__ void CalculatePartialSumsScatter_kernel(
 {
 	int gap = blockDim.x * gridDim.x;
 	unsigned int index = blockIdx.x * blockDim.x + threadIdx.x;
-	
+
 	for (size_t i = index; i < length; i += gap)
 	{
 		int row = scatter_threads_count * cluster[i];
@@ -397,27 +392,6 @@ __global__ void CalculateNewCentroidsReduceByKey_kernel(
 		}
 	}
 }
-
-//__global__ void CalculateNewVectorsReduceByKey_kernel(
-//	float* vector_x,
-//	float* vector_y,
-//	float* vector_z,
-//	int length,
-//	int k_param,
-//	int* cluster,
-//	float* centroid_x,
-//	float* centroid_y,
-//	float* centroid_z,
-//	int* vector_indexes)
-//{
-//	unsigned int index = blockIdx.x * blockDim.x + threadIdx.x;
-//	if (index < length)
-//	{
-//		vector_x[index] = centroid_x[cluster[vector_indexes[index]]];
-//		vector_y[index] = centroid_y[cluster[vector_indexes[index]]];
-//		vector_z[index] = centroid_z[cluster[vector_indexes[index]]];
-//	}
-//}
 
 __global__ void CalculateNewVectorsReduceByKey_kernel(
 	float* vector_x,

@@ -20,7 +20,6 @@ typedef thrust::tuple<float, float, float, int> tuple;
 
 struct TupleSum : thrust::binary_function<tuple, tuple, tuple>
 {
-
 	__host__ __device__ tuple operator()(const tuple& a, const tuple& b)
 	{
 		return tuple(
@@ -43,7 +42,7 @@ void freeArray(void* devPtr)
 
 void memsetArray(void* devPtr, int value, size_t size)
 {
-	checkCudaErrors(cudaMemset(devPtr,value,size));
+	checkCudaErrors(cudaMemset(devPtr, value, size));
 }
 
 void threadSync()
@@ -72,15 +71,15 @@ int CalculateBlockNumber(int length, int blockSize)
 }
 
 int KMeansGatherCuda(
-	float* vector_x, 
-	float* vector_y, 
-	float* vector_z, 
-	int length, 
+	float* vector_x,
+	float* vector_y,
+	float* vector_z,
+	int length,
 	int k_param,
 	int max_iter,
 	int* cluster,
-	float* centroid_x, 
-	float* centroid_y, 
+	float* centroid_x,
+	float* centroid_y,
 	float* centroid_z)
 {
 	//select centroids
@@ -122,7 +121,7 @@ int KMeansGatherCuda(
 			centroid_y,
 			centroid_z,
 			hasCentroidChanged_d);
-		
+
 		copyArrayFromDevice(hasCentroidChanged_h, hasCentroidChanged_d, sizeof(bool));
 		if (hasCentroidChanged_h[0] == false)
 		{
@@ -143,7 +142,6 @@ int KMeansGatherCuda(
 		centroid_z);
 
 	freeArray(hasCentroidChanged_d);
-	//delete [] hasCentroidChanged_h;
 
 	return iterations;
 }
@@ -199,15 +197,10 @@ int KMeansReduceByKeyCuda(
 	allocateArray((void**)&vector_z_sum_d, memFloatSize);
 	allocateArray((void**)&cluster_sum_d, memIntSize);
 	allocateArray((void**)&cluster_values_d, memIntSize);
-	//allocateArray((void**)&vector_indexes, memIntVectorSize);
 
-	//thrust::sequence(thrust::device, vector_indexes, vector_indexes + length, 0, 1);
-
-	//auto vector_iterator_sort_first = thrust::make_zip_iterator(thrust::make_tuple(vector_x, vector_y, vector_z, thrust::make_constant_iterator(1), vector_indexes));
 	auto vector_iterator_first = thrust::make_zip_iterator(thrust::make_tuple(vector_x, vector_y, vector_z, thrust::make_constant_iterator(1)));
-	//auto vector_iterator_first = thrust::make_zip_iterator(thrust::make_tuple(vector_x, vector_y, vector_z));
+
 	auto output_iterator_first = thrust::make_zip_iterator(thrust::make_tuple(vector_x_sum_d, vector_y_sum_d, vector_z_sum_d, cluster_sum_d));
-	//auto output_iterator_first = thrust::make_zip_iterator(thrust::make_tuple(vector_x_sum_d, vector_y_sum_d, vector_z_sum_d));
 
 	for (size_t i = 0; i < max_iter; i++)
 	{
@@ -226,7 +219,6 @@ int KMeansReduceByKeyCuda(
 
 		threadSync();
 
-		//thrust::sort_by_key(thrust::device, cluster, cluster + length, vector_iterator_sort_first);
 		thrust::sort_by_key(thrust::device, cluster, cluster + length, vector_iterator_first);
 
 		auto result = thrust::reduce_by_key(thrust::device, cluster, cluster + length, vector_iterator_first, cluster_values_d, output_iterator_first, binary_pred, TupleSum());
@@ -247,8 +239,6 @@ int KMeansReduceByKeyCuda(
 			cluster_sum_d,
 			cluster_values_d,
 			output_length);
-
-		
 
 		copyArrayFromDevice(hasCentroidChanged_h, hasCentroidChanged_d, sizeof(bool));
 
@@ -279,8 +269,6 @@ int KMeansReduceByKeyCuda(
 	freeArray(vector_x);
 	freeArray(vector_y);
 	freeArray(vector_z);
-	//freeArray(vector_indexes);
-	//delete [] hasCentroidChanged_h;
 
 	return iterations;
 }
@@ -320,7 +308,6 @@ int KMeansScatterCuda(
 	allocateArray((void**)&scatter_array_y_d, memFloatSize);
 	allocateArray((void**)&scatter_array_z_d, memFloatSize);
 	allocateArray((void**)&scatter_array_count_d, memIntSize);
-	
 
 	for (size_t i = 0; i < max_iter; i++)
 	{
@@ -418,17 +405,16 @@ void ConvertToLABCuda(
 	dim3 grid(CalculateBlockNumber(length, block.x), 1, 1);
 
 	ConvertToLAB_kernel << <grid, block >> > (
-		colors, 
-		length, 
+		colors,
+		length,
 		XR,
 		YR,
-		ZR, 
+		ZR,
 		gamma,
 		RGBtoXYZMatrix,
-		vector_x, 
+		vector_x,
 		vector_y,
 		vector_z);
-
 }
 
 void ConvertFromLABCuda(
@@ -447,7 +433,7 @@ void ConvertFromLABCuda(
 	dim3 grid(CalculateBlockNumber(length, block.x), 1, 1);
 
 	ConvertFromLAB_kernel << <grid, block >> > (
-		colors, 
+		colors,
 		length,
 		XR,
 		YR,
@@ -455,8 +441,6 @@ void ConvertFromLABCuda(
 		gamma,
 		XYZtoRGBMatrix,
 		vector_x,
-		vector_y, 
+		vector_y,
 		vector_z);
-
 }
-
